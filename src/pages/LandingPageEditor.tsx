@@ -222,6 +222,24 @@ const LandingPageEditor = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Usuário não autenticado");
 
+      // Validar slug
+      let finalSlug = formData.slug.trim();
+      if (!finalSlug) {
+        // Gerar slug automaticamente a partir do título
+        finalSlug = formData.hero_title
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "") // Remove acentos
+          .replace(/[^a-z0-9\s-]/g, "") // Remove caracteres especiais
+          .replace(/\s+/g, "-") // Substitui espaços por hífens
+          .replace(/-+/g, "-") // Remove hífens duplicados
+          .substring(0, 50); // Limita tamanho
+        
+        // Adiciona sufixo único se necessário
+        const timestamp = Date.now();
+        finalSlug = `${finalSlug}-${timestamp}`;
+      }
+
       // Verificar se o perfil existe, se não, criar
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
@@ -243,15 +261,41 @@ const LandingPageEditor = () => {
       }
 
       if (id) {
+        // Ao atualizar, verificar se o slug mudou e se já existe
+        if (finalSlug !== formData.slug) {
+          const { data: existingPage } = await supabase
+            .from("landing_pages")
+            .select("id")
+            .eq("slug", finalSlug)
+            .neq("id", id)
+            .maybeSingle();
+          
+          if (existingPage) {
+            throw new Error("Este slug já está em uso. Por favor, escolha outro.");
+          }
+        }
+
         const { error } = await supabase
           .from("landing_pages")
-          .update(formData)
+          .update({ ...formData, slug: finalSlug })
           .eq("id", id);
         if (error) throw error;
       } else {
+        // Ao criar, verificar se o slug já existe
+        const { data: existingPage } = await supabase
+          .from("landing_pages")
+          .select("id")
+          .eq("slug", finalSlug)
+          .maybeSingle();
+        
+        if (existingPage) {
+          // Se existir, adicionar timestamp para tornar único
+          finalSlug = `${finalSlug}-${Date.now()}`;
+        }
+
         const { error } = await supabase
           .from("landing_pages")
-          .insert({ ...formData, user_id: user.id });
+          .insert({ ...formData, slug: finalSlug, user_id: user.id });
         if (error) throw error;
       }
 
