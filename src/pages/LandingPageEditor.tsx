@@ -19,6 +19,8 @@ const LandingPageEditor = () => {
   const [saving, setSaving] = useState(false);
   const [uploadingHero, setUploadingHero] = useState(false);
   const [uploadingAbout, setUploadingAbout] = useState(false);
+  const [slugAvailable, setSlugAvailable] = useState<boolean | null>(null);
+  const [checkingSlug, setCheckingSlug] = useState(false);
 
   const [formData, setFormData] = useState({
     slug: "",
@@ -125,6 +127,39 @@ const LandingPageEditor = () => {
     }
   }, [id]);
 
+  // Verificar disponibilidade do slug
+  useEffect(() => {
+    const checkSlugAvailability = async () => {
+      if (!formData.slug || formData.slug.length < 3) {
+        setSlugAvailable(null);
+        return;
+      }
+
+      setCheckingSlug(true);
+      try {
+        const { data } = await supabase
+          .from("landing_pages")
+          .select("id")
+          .eq("slug", formData.slug)
+          .maybeSingle();
+
+        // Se estamos editando, o slug atual é válido
+        if (id && data?.id === id) {
+          setSlugAvailable(true);
+        } else {
+          setSlugAvailable(!data);
+        }
+      } catch (error) {
+        setSlugAvailable(null);
+      } finally {
+        setCheckingSlug(false);
+      }
+    };
+
+    const timeoutId = setTimeout(checkSlugAvailability, 500);
+    return () => clearTimeout(timeoutId);
+  }, [formData.slug, id]);
+
   const loadPage = async () => {
     setLoading(true);
     try {
@@ -217,6 +252,25 @@ const LandingPageEditor = () => {
   };
 
   const handleSave = async () => {
+    // Validar antes de salvar
+    if (!formData.slug) {
+      toast({
+        title: "URL obrigatória",
+        description: "Por favor, defina uma URL amigável para sua página.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (slugAvailable === false) {
+      toast({
+        title: "URL já em uso",
+        description: "Esta URL já está sendo utilizada. Escolha outra.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setSaving(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -335,7 +389,7 @@ const LandingPageEditor = () => {
               {id ? "Editar Landing Page" : "Nova Landing Page"}
             </h1>
           </div>
-          <Button onClick={handleSave} disabled={saving}>
+          <Button onClick={handleSave} disabled={saving || slugAvailable === false || !formData.slug}>
             {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             <Save className="mr-2 h-4 w-4" />
             Salvar
@@ -363,17 +417,74 @@ const LandingPageEditor = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="slug">URL da página (slug)</Label>
-                  <Input
-                    id="slug"
-                    value={formData.slug}
-                    onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                    placeholder="minha-landing-page"
-                    required
-                  />
-                  <p className="text-sm text-muted-foreground">
-                    Sua página estará disponível em: /{formData.slug}
-                  </p>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="slug">URL Amigável da Página</Label>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const generatedSlug = formData.hero_title
+                          .toLowerCase()
+                          .normalize("NFD")
+                          .replace(/[\u0300-\u036f]/g, "")
+                          .replace(/[^a-z0-9\s-]/g, "")
+                          .replace(/\s+/g, "-")
+                          .replace(/-+/g, "-")
+                          .replace(/^-+|-+$/g, "")
+                          .substring(0, 50);
+                        setFormData({ ...formData, slug: generatedSlug });
+                      }}
+                    >
+                      Gerar do Título
+                    </Button>
+                  </div>
+                  <div className="relative">
+                    <Input
+                      id="slug"
+                      value={formData.slug}
+                      onChange={(e) => {
+                        const cleanSlug = e.target.value
+                          .toLowerCase()
+                          .normalize("NFD")
+                          .replace(/[\u0300-\u036f]/g, "")
+                          .replace(/[^a-z0-9-]/g, "");
+                        setFormData({ ...formData, slug: cleanSlug });
+                      }}
+                      placeholder="minha-pagina-de-vendas"
+                      className={
+                        slugAvailable === false
+                          ? "border-destructive"
+                          : slugAvailable === true
+                          ? "border-green-500"
+                          : ""
+                      }
+                    />
+                    {checkingSlug && (
+                      <Loader2 className="absolute right-3 top-3 h-4 w-4 animate-spin text-muted-foreground" />
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <p className="text-sm text-muted-foreground">
+                      Sua página ficará disponível em:{" "}
+                      <span className="font-mono text-primary">
+                        {window.location.origin}/{formData.slug || "sua-url"}
+                      </span>
+                    </p>
+                    {slugAvailable === false && (
+                      <p className="text-sm text-destructive font-medium">
+                        ⚠️ Esta URL já está em uso. Escolha outra.
+                      </p>
+                    )}
+                    {slugAvailable === true && formData.slug && (
+                      <p className="text-sm text-green-600 font-medium">
+                        ✓ URL disponível!
+                      </p>
+                    )}
+                    <p className="text-xs text-muted-foreground">
+                      Use apenas letras minúsculas, números e hífens (ex: creditos-lovable-2024)
+                    </p>
+                  </div>
                 </div>
 
                 <div className="flex items-center space-x-2">
