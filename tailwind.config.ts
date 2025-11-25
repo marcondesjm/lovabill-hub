@@ -13,6 +13,16 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        'display': ['Bebas Neue', 'sans-serif'],
+        'body': ['Inter', 'sans-serif'],
+      },
+      textShadow: {
+        'sm': '0 1px 2px rgba(0,0,0,0.5)',
+        'md': '0 2px 4px rgba(0,0,0,0.5)',
+        'lg': '0 4px 8px rgba(0,0,0,0.5)',
+        'glow': '0 0 20px rgba(239,68,68,0.5)',
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
