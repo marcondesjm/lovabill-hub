@@ -118,38 +118,38 @@ const DynamicLandingPage = () => {
   }
 
   return (
-    <main className="min-h-screen bg-background">
-      <section className="py-12 md:py-20 px-4">
+    <main className="min-h-screen bg-background font-body">
+      <section className="py-16 md:py-24 px-4">
         <div className="max-w-6xl mx-auto text-center">
           {pageData.hero_badge && (
-            <div className="inline-block px-4 py-2 bg-primary/10 text-primary rounded-full mb-6 font-semibold">
-              {pageData.hero_badge}
+            <div className="inline-block px-6 py-2 bg-primary/20 border border-primary/30 text-primary rounded-full mb-8 font-semibold text-sm uppercase tracking-wider">
+              🚨 {pageData.hero_badge} 🚨
             </div>
           )}
           
-          <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-4">
+          <h1 className="font-display text-5xl md:text-7xl lg:text-8xl text-foreground mb-6 tracking-wide uppercase drop-shadow-lg">
             {pageData.hero_title}
           </h1>
           
           {pageData.hero_subtitle && (
-            <p className="text-xl text-muted-foreground mb-8">
+            <p className="text-xl md:text-2xl text-muted-foreground mb-10 max-w-3xl mx-auto leading-relaxed">
               {pageData.hero_subtitle}
             </p>
           )}
           
           {pageData.hero_image_url && (
-            <div className="mb-8">
+            <div className="mb-10">
               <img
                 src={pageData.hero_image_url}
                 alt={pageData.hero_title}
-                className="mx-auto max-w-md w-full h-auto rounded-lg"
+                className="mx-auto max-w-md w-full h-auto rounded-2xl shadow-2xl border border-border/50"
               />
             </div>
           )}
           
           {pageData.bonus_text && (
-            <div className="text-3xl md:text-5xl font-bold bg-gradient-gold bg-clip-text text-transparent mb-8">
-              {pageData.bonus_text}
+            <div className="font-display text-4xl md:text-6xl lg:text-7xl bg-gradient-gold bg-clip-text text-transparent mb-10 tracking-wide uppercase drop-shadow-lg">
+              ✨ {pageData.bonus_text} ✨
             </div>
           )}
           
@@ -158,7 +158,7 @@ const DynamicLandingPage = () => {
               href={`https://wa.me/${pageData.whatsapp_number}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block px-8 py-4 bg-primary text-primary-foreground rounded-lg font-bold text-lg hover:bg-primary/90 transition-colors"
+              className="inline-block px-10 py-5 bg-primary text-primary-foreground rounded-xl font-bold text-xl uppercase tracking-wider hover:bg-primary/90 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
             >
               {pageData.cta_text || "Falar no WhatsApp"}
             </a>
@@ -167,8 +167,8 @@ const DynamicLandingPage = () => {
       </section>
       
       {pageData.offer_text && (
-        <div className="w-full bg-primary text-primary-foreground py-3 px-4 text-center font-bold text-sm md:text-base">
-          {pageData.offer_text}
+        <div className="w-full bg-gradient-to-r from-primary via-primary/90 to-primary text-primary-foreground py-4 px-4 text-center font-display text-xl md:text-2xl uppercase tracking-wider">
+          🔥 {pageData.offer_text} 🔥
         </div>
       )}
       
@@ -180,7 +180,7 @@ const DynamicLandingPage = () => {
                 <Sparkles className="w-5 h-5 text-primary" />
                 <span className="text-primary font-semibold">Benefícios Exclusivos</span>
               </div>
-              <h2 className="text-3xl md:text-4xl font-bold">
+              <h2 className="font-display text-4xl md:text-5xl uppercase tracking-wide">
                 O que você vai receber
               </h2>
             </div>
@@ -209,7 +209,7 @@ const DynamicLandingPage = () => {
                 <Award className="w-5 h-5 text-success" />
                 <span className="text-success font-semibold">Diferenciais</span>
               </div>
-              <h2 className="text-3xl md:text-4xl font-bold">
+              <h2 className="font-display text-4xl md:text-5xl uppercase tracking-wide">
                 Por que comprar comigo?
               </h2>
             </div>
@@ -256,7 +256,7 @@ const DynamicLandingPage = () => {
                 <Zap className="w-5 h-5 text-primary" />
                 <span className="text-primary font-semibold">Processo Simples</span>
               </div>
-              <h2 className="text-3xl md:text-4xl font-bold">
+              <h2 className="font-display text-4xl md:text-5xl uppercase tracking-wide">
                 Como funciona?
               </h2>
             </div>
@@ -287,22 +287,22 @@ const DynamicLandingPage = () => {
       {pageData.pricing_plans && Array.isArray(pageData.pricing_plans) && pageData.pricing_plans.length > 0 && (
         <section className="py-16 px-4">
           <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
+            <h2 className="font-display text-4xl md:text-5xl uppercase tracking-wide text-center mb-12">
               Escolha seu pacote
             </h2>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
               {pageData.pricing_plans.map((plan: any, index: number) => (
-                <div key={index} className="p-6 bg-background border-2 border-primary/20 rounded-lg hover:border-primary transition-colors">
-                  <div className="text-center mb-6">
-                    <div className="text-4xl font-bold text-primary mb-2">
-                      {plan.credits} créditos
+                <div key={index} className="group p-8 bg-card border-2 border-primary/20 rounded-2xl hover:border-primary hover:shadow-2xl transition-all duration-300 hover:scale-105">
+                  <div className="text-center mb-8">
+                    <div className="font-display text-5xl md:text-6xl text-primary mb-2 tracking-wide">
+                      {plan.credits} CRÉDITOS
                     </div>
-                    <div className="text-3xl font-bold">
+                    <div className="font-display text-4xl md:text-5xl text-foreground">
                       R$ {plan.price}
                     </div>
                     {plan.bonus && (
-                      <div className="text-sm text-success mt-2">
-                        +{plan.bonus} bônus
+                      <div className="inline-block mt-4 px-4 py-2 bg-success/20 text-success rounded-full text-sm font-bold uppercase tracking-wider">
+                        🎁 +{plan.bonus} bônus
                       </div>
                     )}
                   </div>
@@ -311,7 +311,7 @@ const DynamicLandingPage = () => {
                       href={`https://wa.me/${pageData.whatsapp_number}?text=Olá! Gostaria de comprar o pacote de ${plan.credits} créditos`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="block w-full px-6 py-3 bg-primary text-primary-foreground rounded-lg font-bold text-center hover:bg-primary/90 transition-colors"
+                      className="block w-full px-6 py-4 bg-primary text-primary-foreground rounded-xl font-bold text-center text-lg uppercase tracking-wider hover:bg-primary/90 transition-all duration-300"
                     >
                       {pageData.cta_text || "Comprar Agora"}
                     </a>
@@ -331,8 +331,8 @@ const DynamicLandingPage = () => {
                 <Shield className="w-5 h-5 text-success" />
                 <span className="text-success font-semibold">100% Seguro</span>
               </div>
-              <h2 className="text-3xl md:text-4xl font-bold flex items-center justify-center gap-3">
-                <Lock className="w-8 h-8 text-primary" />
+              <h2 className="font-display text-4xl md:text-5xl flex items-center justify-center gap-4 uppercase tracking-wide">
+                <Lock className="w-10 h-10 text-primary" />
                 Segurança e Privacidade
               </h2>
             </div>
@@ -356,7 +356,7 @@ const DynamicLandingPage = () => {
       {pageData.about_name && (
         <section className="py-16 px-4">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
+            <h2 className="font-display text-4xl md:text-5xl uppercase tracking-wide text-center mb-12">
               Sobre Mim
             </h2>
             <div className="flex flex-col md:flex-row gap-8 items-center">
@@ -409,7 +409,7 @@ const DynamicLandingPage = () => {
                 <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
                 <span className="text-yellow-600 font-semibold">Clientes Satisfeitos</span>
               </div>
-              <h2 className="text-3xl md:text-4xl font-bold">
+              <h2 className="font-display text-4xl md:text-5xl uppercase tracking-wide">
                 Depoimentos
               </h2>
             </div>
@@ -451,7 +451,7 @@ const DynamicLandingPage = () => {
                 <HelpCircle className="w-5 h-5 text-primary" />
                 <span className="text-primary font-semibold">Tire suas dúvidas</span>
               </div>
-              <h2 className="text-3xl md:text-4xl font-bold">
+              <h2 className="font-display text-4xl md:text-5xl uppercase tracking-wide">
                 Perguntas Frequentes
               </h2>
             </div>
