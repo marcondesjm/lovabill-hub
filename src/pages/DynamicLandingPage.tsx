@@ -1,7 +1,26 @@
 import { useEffect, useState } from "react";
 import { useParams, Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2 } from "lucide-react";
+import { 
+  Loader2, 
+  CheckCircle2, 
+  Shield, 
+  Star, 
+  Zap, 
+  Clock, 
+  CreditCard, 
+  HeadphonesIcon,
+  MessageCircle,
+  Sparkles,
+  BadgeCheck,
+  Lock,
+  Award,
+  TrendingUp,
+  Users,
+  Heart,
+  HelpCircle,
+  ChevronDown
+} from "lucide-react";
 
 type LandingPageData = {
   slug: string;
@@ -154,18 +173,27 @@ const DynamicLandingPage = () => {
       )}
       
       {pageData.benefits_receive && Array.isArray(pageData.benefits_receive) && pageData.benefits_receive.length > 0 && (
-        <section className="py-16 px-4 bg-muted/30">
+        <section className="py-16 px-4 bg-gradient-to-b from-muted/30 to-background">
           <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
-              O que você vai receber
-            </h2>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2">
+            <div className="text-center mb-12">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full mb-4">
+                <Sparkles className="w-5 h-5 text-primary" />
+                <span className="text-primary font-semibold">Benefícios Exclusivos</span>
+              </div>
+              <h2 className="text-3xl md:text-4xl font-bold">
+                O que você vai receber
+              </h2>
+            </div>
+            <div className="grid gap-6 md:grid-cols-2">
               {pageData.benefits_receive.map((benefit: string, index: number) => (
-                <div key={index} className="flex items-start gap-3 p-6 bg-background rounded-lg shadow-sm">
-                  <div className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 mt-1">
-                    ✓
+                <div 
+                  key={index} 
+                  className="group flex items-start gap-4 p-6 bg-background rounded-2xl border border-border/50 shadow-sm hover:shadow-lg hover:border-primary/30 transition-all duration-300"
+                >
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
+                    <CheckCircle2 className="w-6 h-6 text-primary" />
                   </div>
-                  <p className="text-lg">{benefit}</p>
+                  <p className="text-lg text-foreground/90 leading-relaxed pt-2">{benefit}</p>
                 </div>
               ))}
             </div>
@@ -176,36 +204,79 @@ const DynamicLandingPage = () => {
       {pageData.why_buy_items && Array.isArray(pageData.why_buy_items) && pageData.why_buy_items.length > 0 && (
         <section className="py-16 px-4">
           <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
-              Por que comprar comigo?
-            </h2>
-            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
-              {pageData.why_buy_items.map((item: any, index: number) => (
-                <div key={index} className="text-center">
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-                    <span className="text-2xl">{item.icon}</span>
+            <div className="text-center mb-12">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-success/10 rounded-full mb-4">
+                <Award className="w-5 h-5 text-success" />
+                <span className="text-success font-semibold">Diferenciais</span>
+              </div>
+              <h2 className="text-3xl md:text-4xl font-bold">
+                Por que comprar comigo?
+              </h2>
+            </div>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+              {pageData.why_buy_items.map((item: any, index: number) => {
+                const iconMap: { [key: string]: React.ReactNode } = {
+                  "⚡": <Zap className="w-8 h-8" />,
+                  "🛡️": <Shield className="w-8 h-8" />,
+                  "💳": <CreditCard className="w-8 h-8" />,
+                  "🎧": <HeadphonesIcon className="w-8 h-8" />,
+                  "⭐": <Star className="w-8 h-8" />,
+                  "✅": <BadgeCheck className="w-8 h-8" />,
+                  "🔒": <Lock className="w-8 h-8" />,
+                  "📈": <TrendingUp className="w-8 h-8" />,
+                  "👥": <Users className="w-8 h-8" />,
+                  "❤️": <Heart className="w-8 h-8" />,
+                  "💬": <MessageCircle className="w-8 h-8" />,
+                  "⏰": <Clock className="w-8 h-8" />,
+                };
+                const IconComponent = iconMap[item.icon] || <Sparkles className="w-8 h-8" />;
+                
+                return (
+                  <div 
+                    key={index} 
+                    className="group text-center p-6 rounded-2xl bg-gradient-to-b from-card to-card/50 border border-border/50 hover:border-primary/30 hover:shadow-xl transition-all duration-300"
+                  >
+                    <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-primary/20 via-primary/10 to-transparent flex items-center justify-center text-primary group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                      {IconComponent}
+                    </div>
+                    <h3 className="font-bold text-lg text-foreground">{item.title}</h3>
                   </div>
-                  <h3 className="font-bold text-lg">{item.title}</h3>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </section>
       )}
       
       {pageData.how_to_steps && Array.isArray(pageData.how_to_steps) && pageData.how_to_steps.length > 0 && (
-        <section className="py-16 px-4 bg-muted/30">
+        <section className="py-16 px-4 bg-gradient-to-b from-muted/30 to-background">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
-              Como funciona?
-            </h2>
-            <div className="space-y-6">
-              {pageData.how_to_steps.map((step: any) => (
-                <div key={step.step} className="flex items-start gap-4 p-6 bg-background rounded-lg">
-                  <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0 font-bold">
-                    {step.step}
+            <div className="text-center mb-12">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full mb-4">
+                <Zap className="w-5 h-5 text-primary" />
+                <span className="text-primary font-semibold">Processo Simples</span>
+              </div>
+              <h2 className="text-3xl md:text-4xl font-bold">
+                Como funciona?
+              </h2>
+            </div>
+            <div className="space-y-4">
+              {pageData.how_to_steps.map((step: any, index: number) => (
+                <div 
+                  key={step.step} 
+                  className="group relative flex items-start gap-6 p-6 bg-background rounded-2xl border border-border/50 hover:border-primary/30 hover:shadow-lg transition-all duration-300"
+                >
+                  <div className="relative">
+                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground flex items-center justify-center flex-shrink-0 font-bold text-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+                      {step.step}
+                    </div>
+                    {index < pageData.how_to_steps.length - 1 && (
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 w-0.5 h-8 bg-gradient-to-b from-primary/50 to-transparent" />
+                    )}
                   </div>
-                  <p className="text-lg">{step.title}</p>
+                  <div className="pt-3">
+                    <p className="text-lg font-medium text-foreground">{step.title}</p>
+                  </div>
                 </div>
               ))}
             </div>
@@ -253,16 +324,28 @@ const DynamicLandingPage = () => {
       )}
       
       {pageData.security_items && Array.isArray(pageData.security_items) && pageData.security_items.length > 0 && (
-        <section className="py-16 px-4 bg-muted/30">
+        <section className="py-16 px-4 bg-gradient-to-b from-muted/30 to-background">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
-              🔒 Segurança e Privacidade
-            </h2>
+            <div className="text-center mb-12">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-success/10 rounded-full mb-4">
+                <Shield className="w-5 h-5 text-success" />
+                <span className="text-success font-semibold">100% Seguro</span>
+              </div>
+              <h2 className="text-3xl md:text-4xl font-bold flex items-center justify-center gap-3">
+                <Lock className="w-8 h-8 text-primary" />
+                Segurança e Privacidade
+              </h2>
+            </div>
             <div className="space-y-4">
               {pageData.security_items.map((item: string, index: number) => (
-                <div key={index} className="flex items-start gap-3 p-4 bg-background rounded-lg">
-                  <span className="text-success text-xl flex-shrink-0">✓</span>
-                  <p>{item}</p>
+                <div 
+                  key={index} 
+                  className="group flex items-start gap-4 p-5 bg-background rounded-xl border border-border/50 hover:border-success/30 hover:shadow-md transition-all duration-300"
+                >
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-success/20 to-success/5 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
+                    <CheckCircle2 className="w-5 h-5 text-success" />
+                  </div>
+                  <p className="text-foreground/90 pt-2">{item}</p>
                 </div>
               ))}
             </div>
@@ -319,26 +402,40 @@ const DynamicLandingPage = () => {
       )}
       
       {pageData.testimonials && Array.isArray(pageData.testimonials) && pageData.testimonials.length > 0 && (
-        <section className="py-16 px-4 bg-muted/30">
+        <section className="py-16 px-4 bg-gradient-to-b from-muted/30 to-background">
           <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
-              Depoimentos
-            </h2>
+            <div className="text-center mb-12">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-yellow-500/10 rounded-full mb-4">
+                <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
+                <span className="text-yellow-600 font-semibold">Clientes Satisfeitos</span>
+              </div>
+              <h2 className="text-3xl md:text-4xl font-bold">
+                Depoimentos
+              </h2>
+            </div>
             <div className="grid gap-6 md:grid-cols-2">
               {pageData.testimonials.map((testimonial: any, index: number) => (
-                <div key={index} className="p-6 bg-background rounded-lg shadow-sm">
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="flex">
-                      {[...Array(testimonial.rating || 5)].map((_, i) => (
-                        <span key={i} className="text-yellow-500">★</span>
-                      ))}
+                <div 
+                  key={index} 
+                  className="group p-6 bg-background rounded-2xl border border-border/50 hover:border-primary/30 hover:shadow-xl transition-all duration-300"
+                >
+                  <div className="flex items-center gap-1 mb-4">
+                    {[...Array(testimonial.rating || 5)].map((_, i) => (
+                      <Star key={i} className="w-5 h-5 text-yellow-500 fill-yellow-500" />
+                    ))}
+                  </div>
+                  <p className="text-muted-foreground mb-6 text-lg leading-relaxed">"{testimonial.content}"</p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+                      <Users className="w-6 h-6 text-primary" />
+                    </div>
+                    <div>
+                      <div className="font-bold text-foreground">{testimonial.name}</div>
+                      {testimonial.role && (
+                        <div className="text-sm text-muted-foreground">{testimonial.role}</div>
+                      )}
                     </div>
                   </div>
-                  <p className="text-muted-foreground mb-4">"{testimonial.content}"</p>
-                  <div className="font-bold">{testimonial.name}</div>
-                  {testimonial.role && (
-                    <div className="text-sm text-muted-foreground">{testimonial.role}</div>
-                  )}
                 </div>
               ))}
             </div>
@@ -349,14 +446,31 @@ const DynamicLandingPage = () => {
       {pageData.faq_items && Array.isArray(pageData.faq_items) && pageData.faq_items.length > 0 && (
         <section className="py-16 px-4">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
-              Perguntas Frequentes
-            </h2>
+            <div className="text-center mb-12">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full mb-4">
+                <HelpCircle className="w-5 h-5 text-primary" />
+                <span className="text-primary font-semibold">Tire suas dúvidas</span>
+              </div>
+              <h2 className="text-3xl md:text-4xl font-bold">
+                Perguntas Frequentes
+              </h2>
+            </div>
             <div className="space-y-4">
               {pageData.faq_items.map((faq: any, index: number) => (
-                <details key={index} className="p-6 bg-muted rounded-lg">
-                  <summary className="font-bold cursor-pointer">{faq.question}</summary>
-                  <p className="mt-4 text-muted-foreground">{faq.answer}</p>
+                <details 
+                  key={index} 
+                  className="group p-6 bg-background rounded-2xl border border-border/50 hover:border-primary/30 transition-all duration-300 [&[open]]:shadow-lg"
+                >
+                  <summary className="font-bold cursor-pointer flex items-center justify-between gap-4 text-foreground">
+                    <span className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <HelpCircle className="w-4 h-4 text-primary" />
+                      </div>
+                      {faq.question}
+                    </span>
+                    <ChevronDown className="w-5 h-5 text-muted-foreground group-open:rotate-180 transition-transform duration-300" />
+                  </summary>
+                  <p className="mt-4 pl-11 text-muted-foreground leading-relaxed">{faq.answer}</p>
                 </details>
               ))}
             </div>
