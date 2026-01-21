@@ -3,15 +3,17 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Plus, LogOut } from "lucide-react";
+import { Loader2, Plus, LogOut, Shield } from "lucide-react";
 import { User } from "@supabase/supabase-js";
 import { LandingPageList } from "@/components/dashboard/LandingPageList";
+import { useAdminCheck } from "@/hooks/useAdminCheck";
 
 const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isAdmin } = useAdminCheck();
 
   useEffect(() => {
     const checkUser = async () => {
@@ -60,6 +62,12 @@ const Dashboard = () => {
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold">Minhas Landing Pages</h1>
           <div className="flex gap-2">
+            {isAdmin && (
+              <Button variant="outline" onClick={() => navigate("/admin")}>
+                <Shield className="mr-2 h-4 w-4" />
+                Painel Admin
+              </Button>
+            )}
             <Button onClick={handleCreateNew}>
               <Plus className="mr-2 h-4 w-4" />
               Nova Landing Page
