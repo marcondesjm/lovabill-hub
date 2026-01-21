@@ -6,11 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft, Save, Upload, X, Plus, Trash2 } from "lucide-react";
+import { Loader2, ArrowLeft, Save, Upload, X, Plus, Trash2, Eye, EyeOff } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-
+import { LandingPagePreview } from "@/components/editor/LandingPagePreview";
 const LandingPageEditor = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -21,6 +21,7 @@ const LandingPageEditor = () => {
   const [uploadingAbout, setUploadingAbout] = useState(false);
   const [slugAvailable, setSlugAvailable] = useState<boolean | null>(null);
   const [checkingSlug, setCheckingSlug] = useState(false);
+  const [showPreview, setShowPreview] = useState(true);
 
   const [formData, setFormData] = useState({
     slug: "",
@@ -378,35 +379,58 @@ const LandingPageEditor = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <header className="border-b sticky top-0 bg-background z-10">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-4">
             <Button variant="ghost" onClick={() => navigate("/dashboard")}>
               <ArrowLeft className="h-4 w-4" />
             </Button>
-            <h1 className="text-2xl font-bold">
+            <h1 className="text-xl font-bold">
               {id ? "Editar Landing Page" : "Nova Landing Page"}
             </h1>
           </div>
-          <Button onClick={handleSave} disabled={saving || slugAvailable === false || !formData.slug}>
-            {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            <Save className="mr-2 h-4 w-4" />
-            Salvar
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowPreview(!showPreview)}
+              className="hidden lg:flex"
+            >
+              {showPreview ? (
+                <>
+                  <EyeOff className="mr-2 h-4 w-4" />
+                  Ocultar Preview
+                </>
+              ) : (
+                <>
+                  <Eye className="mr-2 h-4 w-4" />
+                  Mostrar Preview
+                </>
+              )}
+            </Button>
+            <Button onClick={handleSave} disabled={saving || slugAvailable === false || !formData.slug}>
+              {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              <Save className="mr-2 h-4 w-4" />
+              Salvar
+            </Button>
+          </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 max-w-4xl">
-        <Tabs defaultValue="basic" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
-            <TabsTrigger value="basic">Básico</TabsTrigger>
-            <TabsTrigger value="pricing">Preços</TabsTrigger>
-            <TabsTrigger value="about">Sobre</TabsTrigger>
-            <TabsTrigger value="content">Conteúdo</TabsTrigger>
-            <TabsTrigger value="testimonials">Depoimentos</TabsTrigger>
-            <TabsTrigger value="seo">SEO</TabsTrigger>
-          </TabsList>
+      <div className="flex-1 flex overflow-hidden">
+        {/* Editor Panel */}
+        <main className={`flex-1 overflow-auto p-4 ${showPreview ? 'lg:w-1/2' : 'w-full'}`}>
+          <div className="max-w-2xl mx-auto">
+            <Tabs defaultValue="basic" className="space-y-6">
+              <TabsList className="grid w-full grid-cols-6">
+                <TabsTrigger value="basic" className="text-xs">Básico</TabsTrigger>
+                <TabsTrigger value="pricing" className="text-xs">Preços</TabsTrigger>
+                <TabsTrigger value="about" className="text-xs">Sobre</TabsTrigger>
+                <TabsTrigger value="content" className="text-xs">Conteúdo</TabsTrigger>
+                <TabsTrigger value="testimonials" className="text-xs">Depoimentos</TabsTrigger>
+                <TabsTrigger value="seo" className="text-xs">SEO</TabsTrigger>
+              </TabsList>
 
           {/* Basic Tab */}
           <TabsContent value="basic" className="space-y-6">
@@ -1293,7 +1317,22 @@ const LandingPageEditor = () => {
             </Card>
           </TabsContent>
         </Tabs>
-      </main>
+          </div>
+        </main>
+
+        {/* Preview Panel */}
+        {showPreview && (
+          <aside className="hidden lg:block lg:w-1/2 border-l border-border bg-muted/30 overflow-auto">
+            <div className="sticky top-0 bg-muted/50 border-b border-border px-4 py-2 flex items-center justify-between">
+              <span className="text-sm font-medium text-muted-foreground">Preview</span>
+              <span className="text-xs text-muted-foreground">/{formData.slug || "sua-url"}</span>
+            </div>
+            <div className="h-[calc(100vh-120px)] overflow-auto">
+              <LandingPagePreview formData={formData} />
+            </div>
+          </aside>
+        )}
+      </div>
     </div>
   );
 };
