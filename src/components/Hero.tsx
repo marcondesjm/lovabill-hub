@@ -12,8 +12,8 @@ export const Hero = () => {
           transition={{ delay: 0.2 }}
           className="mb-6"
         >
-          <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-4">
-            CRÉDITOS LOVABLE COM BÔNUS EXCLUSIVO
+        <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-4">
+            100 CRÉDITOS LOVABLE COM BÔNUS EXCLUSIVO
           </h1>
         </motion.div>
 
