@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { CheckCircle2 } from "lucide-react";
 import heroWizard from "@/assets/hero-wizard.png";
+import { CustomerCounter } from "./CustomerCounter";
 
 export const Hero = () => {
   return (
@@ -9,10 +10,19 @@ export const Hero = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="mb-4"
+        >
+          <CustomerCounter />
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
           className="mb-6"
         >
-        <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-4">
+          <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-4">
             CRÉDITOS LOVABLE COM BÔNUS EXCLUSIVO
           </h1>
         </motion.div>
