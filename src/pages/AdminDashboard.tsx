@@ -19,7 +19,8 @@ import {
   ToggleRight,
   RefreshCw,
   LayoutDashboard,
-  Crown
+  Crown,
+  Pencil
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -379,14 +380,25 @@ const AdminDashboard = () => {
                             variant="ghost"
                             onClick={() => window.open(`/${page.slug}`, "_blank")}
                             className="text-white/70 hover:text-white hover:bg-white/10"
+                            title="Visualizar"
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
                           <Button
                             size="sm"
                             variant="ghost"
+                            onClick={() => navigate(`/dashboard/editor/${page.id}`)}
+                            className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
+                            title="Editar"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
                             onClick={() => togglePagePublish(page.id, page.is_published)}
                             className="text-white/70 hover:text-white hover:bg-white/10"
+                            title={page.is_published ? "Despublicar" : "Publicar"}
                           >
                             {page.is_published ? (
                               <ToggleRight className="h-4 w-4 text-green-400" />
@@ -399,6 +411,7 @@ const AdminDashboard = () => {
                             variant="ghost"
                             onClick={() => deleteLandingPage(page.id)}
                             className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                            title="Excluir"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
