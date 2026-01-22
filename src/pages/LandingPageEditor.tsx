@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft, Save, Upload, X, Plus, Trash2, Eye, EyeOff } from "lucide-react";
+import { Loader2, ArrowLeft, Save, Upload, X, Plus, Trash2, Eye, EyeOff, ChevronUp, ChevronDown } from "lucide-react";
+import { ReorderButtons } from "@/components/editor/ReorderButtons";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,6 +33,31 @@ const LandingPageEditor = () => {
     // Scroll to top of editor panel
     if (editorPanelRef.current) {
       editorPanelRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  // Função genérica para mover itens em arrays
+  const moveItem = <T,>(array: T[], fromIndex: number, toIndex: number): T[] => {
+    if (toIndex < 0 || toIndex >= array.length) return array;
+    const newArray = [...array];
+    const [item] = newArray.splice(fromIndex, 1);
+    newArray.splice(toIndex, 0, item);
+    return newArray;
+  };
+
+  const moveItemUp = (arrayKey: keyof typeof formData, index: number) => {
+    const array = formData[arrayKey] as any[];
+    if (index > 0) {
+      const newArray = moveItem(array, index, index - 1);
+      setFormData({ ...formData, [arrayKey]: newArray });
+    }
+  };
+
+  const moveItemDown = (arrayKey: keyof typeof formData, index: number) => {
+    const array = formData[arrayKey] as any[];
+    if (index < array.length - 1) {
+      const newArray = moveItem(array, index, index + 1);
+      setFormData({ ...formData, [arrayKey]: newArray });
     }
   };
 
@@ -777,17 +803,25 @@ const LandingPageEditor = () => {
                     <CardContent className="pt-6 space-y-4">
                       <div className="flex justify-between items-center">
                         <h4 className="font-semibold">Pacote {index + 1}</h4>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => {
-                            const newPlans = [...formData.pricing_plans];
-                            newPlans.splice(index, 1);
-                            setFormData({ ...formData, pricing_plans: newPlans });
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <div className="flex gap-2">
+                          <ReorderButtons
+                            index={index}
+                            totalItems={formData.pricing_plans.length}
+                            onMoveUp={() => moveItemUp("pricing_plans", index)}
+                            onMoveDown={() => moveItemDown("pricing_plans", index)}
+                          />
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => {
+                              const newPlans = [...formData.pricing_plans];
+                              newPlans.splice(index, 1);
+                              setFormData({ ...formData, pricing_plans: newPlans });
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
 
                       <div className="grid grid-cols-3 gap-4">
@@ -930,17 +964,25 @@ const LandingPageEditor = () => {
                     <CardContent className="pt-6 space-y-4">
                       <div className="flex justify-between items-center">
                         <h4 className="font-semibold">Destaque {index + 1}</h4>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => {
-                            const newHighlights = [...formData.about_highlights];
-                            newHighlights.splice(index, 1);
-                            setFormData({ ...formData, about_highlights: newHighlights });
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <div className="flex gap-2">
+                          <ReorderButtons
+                            index={index}
+                            totalItems={formData.about_highlights.length}
+                            onMoveUp={() => moveItemUp("about_highlights", index)}
+                            onMoveDown={() => moveItemDown("about_highlights", index)}
+                          />
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => {
+                              const newHighlights = [...formData.about_highlights];
+                              newHighlights.splice(index, 1);
+                              setFormData({ ...formData, about_highlights: newHighlights });
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
 
                       <div className="space-y-2">
@@ -1000,17 +1042,25 @@ const LandingPageEditor = () => {
                     <CardContent className="pt-6 space-y-4">
                       <div className="flex justify-between items-center">
                         <h4 className="font-semibold">Item {index + 1}</h4>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => {
-                            const newItems = [...formData.why_buy_items];
-                            newItems.splice(index, 1);
-                            setFormData({ ...formData, why_buy_items: newItems });
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <div className="flex gap-2">
+                          <ReorderButtons
+                            index={index}
+                            totalItems={formData.why_buy_items.length}
+                            onMoveUp={() => moveItemUp("why_buy_items", index)}
+                            onMoveDown={() => moveItemDown("why_buy_items", index)}
+                          />
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => {
+                              const newItems = [...formData.why_buy_items];
+                              newItems.splice(index, 1);
+                              setFormData({ ...formData, why_buy_items: newItems });
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
 
                       <div className="grid grid-cols-2 gap-4">
@@ -1070,18 +1120,38 @@ const LandingPageEditor = () => {
                   <Card key={index}>
                     <CardContent className="pt-6 space-y-4">
                       <div className="flex justify-between items-center">
-                        <h4 className="font-semibold">Passo {step.step}</h4>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => {
-                            const newSteps = [...formData.how_to_steps];
-                            newSteps.splice(index, 1);
-                            setFormData({ ...formData, how_to_steps: newSteps });
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <h4 className="font-semibold">Passo {index + 1}</h4>
+                        <div className="flex gap-2">
+                          <ReorderButtons
+                            index={index}
+                            totalItems={formData.how_to_steps.length}
+                            onMoveUp={() => {
+                              const newSteps = moveItem(formData.how_to_steps, index, index - 1);
+                              // Atualizar números dos passos
+                              const renumbered = newSteps.map((s: any, i: number) => ({ ...s, step: i + 1 }));
+                              setFormData({ ...formData, how_to_steps: renumbered });
+                            }}
+                            onMoveDown={() => {
+                              const newSteps = moveItem(formData.how_to_steps, index, index + 1);
+                              // Atualizar números dos passos
+                              const renumbered = newSteps.map((s: any, i: number) => ({ ...s, step: i + 1 }));
+                              setFormData({ ...formData, how_to_steps: renumbered });
+                            }}
+                          />
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => {
+                              const newSteps = [...formData.how_to_steps];
+                              newSteps.splice(index, 1);
+                              // Renumerar passos
+                              const renumbered = newSteps.map((s: any, i: number) => ({ ...s, step: i + 1 }));
+                              setFormData({ ...formData, how_to_steps: renumbered });
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
 
                       <div className="space-y-2">
@@ -1120,7 +1190,13 @@ const LandingPageEditor = () => {
                 </Button>
 
                 {formData.benefits_receive.map((benefit: string, index: number) => (
-                  <div key={index} className="flex gap-2">
+                  <div key={index} className="flex gap-2 items-center">
+                    <ReorderButtons
+                      index={index}
+                      totalItems={formData.benefits_receive.length}
+                      onMoveUp={() => moveItemUp("benefits_receive", index)}
+                      onMoveDown={() => moveItemDown("benefits_receive", index)}
+                    />
                     <Input
                       value={benefit}
                       onChange={(e) => {
@@ -1129,6 +1205,7 @@ const LandingPageEditor = () => {
                         setFormData({ ...formData, benefits_receive: newBenefits });
                       }}
                       placeholder="Créditos válidos diretamente na sua conta"
+                      className="flex-1"
                     />
                     <Button
                       variant="destructive"
@@ -1164,7 +1241,13 @@ const LandingPageEditor = () => {
                 </Button>
 
                 {formData.security_items.map((item: string, index: number) => (
-                  <div key={index} className="flex gap-2">
+                  <div key={index} className="flex gap-2 items-center">
+                    <ReorderButtons
+                      index={index}
+                      totalItems={formData.security_items.length}
+                      onMoveUp={() => moveItemUp("security_items", index)}
+                      onMoveDown={() => moveItemDown("security_items", index)}
+                    />
                     <Input
                       value={item}
                       onChange={(e) => {
@@ -1173,6 +1256,7 @@ const LandingPageEditor = () => {
                         setFormData({ ...formData, security_items: newItems });
                       }}
                       placeholder="Nenhum dado sensível é solicitado"
+                      className="flex-1"
                     />
                     <Button
                       variant="destructive"
@@ -1212,17 +1296,25 @@ const LandingPageEditor = () => {
                     <CardContent className="pt-6 space-y-4">
                       <div className="flex justify-between items-center">
                         <h4 className="font-semibold">Pergunta {index + 1}</h4>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => {
-                            const newFaqs = [...formData.faq_items];
-                            newFaqs.splice(index, 1);
-                            setFormData({ ...formData, faq_items: newFaqs });
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <div className="flex gap-2">
+                          <ReorderButtons
+                            index={index}
+                            totalItems={formData.faq_items.length}
+                            onMoveUp={() => moveItemUp("faq_items", index)}
+                            onMoveDown={() => moveItemDown("faq_items", index)}
+                          />
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => {
+                              const newFaqs = [...formData.faq_items];
+                              newFaqs.splice(index, 1);
+                              setFormData({ ...formData, faq_items: newFaqs });
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
 
                       <div className="space-y-2">
@@ -1285,17 +1377,25 @@ const LandingPageEditor = () => {
                     <CardContent className="pt-6 space-y-4">
                       <div className="flex justify-between items-center">
                         <h4 className="font-semibold">Depoimento {index + 1}</h4>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => {
-                            const newTestimonials = [...formData.testimonials];
-                            newTestimonials.splice(index, 1);
-                            setFormData({ ...formData, testimonials: newTestimonials });
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <div className="flex gap-2">
+                          <ReorderButtons
+                            index={index}
+                            totalItems={formData.testimonials.length}
+                            onMoveUp={() => moveItemUp("testimonials", index)}
+                            onMoveDown={() => moveItemDown("testimonials", index)}
+                          />
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => {
+                              const newTestimonials = [...formData.testimonials];
+                              newTestimonials.splice(index, 1);
+                              setFormData({ ...formData, testimonials: newTestimonials });
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
 
                       <div className="grid grid-cols-2 gap-4">
