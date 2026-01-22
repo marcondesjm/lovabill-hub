@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, ArrowLeft, Save, Upload, X, Plus, Trash2, Eye, EyeOff, GripVertical } from "lucide-react";
+import { SlugGenerator } from "@/components/editor/SlugGenerator";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -490,76 +491,14 @@ const LandingPageEditor = () => {
                 <CardDescription>Configure os dados principais da landing page</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="slug">URL Amigável da Página</Label>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        const generatedSlug = formData.hero_title
-                          .toLowerCase()
-                          .normalize("NFD")
-                          .replace(/[\u0300-\u036f]/g, "")
-                          .replace(/[^a-z0-9\s-]/g, "")
-                          .replace(/\s+/g, "-")
-                          .replace(/-+/g, "-")
-                          .replace(/^-+|-+$/g, "")
-                          .substring(0, 50);
-                        setFormData({ ...formData, slug: generatedSlug });
-                      }}
-                    >
-                      Gerar do Título
-                    </Button>
-                  </div>
-                  <div className="relative">
-                    <Input
-                      id="slug"
-                      value={formData.slug}
-                      onChange={(e) => {
-                        const cleanSlug = e.target.value
-                          .toLowerCase()
-                          .normalize("NFD")
-                          .replace(/[\u0300-\u036f]/g, "")
-                          .replace(/[^a-z0-9-]/g, "");
-                        setFormData({ ...formData, slug: cleanSlug });
-                      }}
-                      placeholder="minha-pagina-de-vendas"
-                      className={
-                        slugAvailable === false
-                          ? "border-destructive"
-                          : slugAvailable === true
-                          ? "border-green-500"
-                          : ""
-                      }
-                    />
-                    {checkingSlug && (
-                      <Loader2 className="absolute right-3 top-3 h-4 w-4 animate-spin text-muted-foreground" />
-                    )}
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <p className="text-sm text-muted-foreground">
-                      Sua página ficará disponível em:{" "}
-                      <span className="font-mono text-primary">
-                        {window.location.origin}/{formData.slug || "sua-url"}
-                      </span>
-                    </p>
-                    {slugAvailable === false && (
-                      <p className="text-sm text-destructive font-medium">
-                        ⚠️ Esta URL já está em uso. Escolha outra.
-                      </p>
-                    )}
-                    {slugAvailable === true && formData.slug && (
-                      <p className="text-sm text-green-600 font-medium">
-                        ✓ URL disponível!
-                      </p>
-                    )}
-                    <p className="text-xs text-muted-foreground">
-                      Use apenas letras minúsculas, números e hífens (ex: creditos-lovable-2024)
-                    </p>
-                  </div>
-                </div>
+                <SlugGenerator
+                  slug={formData.slug}
+                  heroTitle={formData.hero_title}
+                  currentPageId={id}
+                  onSlugChange={(newSlug) => setFormData({ ...formData, slug: newSlug })}
+                  slugAvailable={slugAvailable}
+                  checkingSlug={checkingSlug}
+                />
 
                 <div className="flex items-center space-x-2">
                   <Switch
