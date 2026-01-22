@@ -23,6 +23,7 @@ export type Database = {
           about_title: string | null
           benefits_receive: Json | null
           bonus_text: string | null
+          channel_name: string | null
           channel_url: string | null
           created_at: string
           cta_text: string | null
@@ -55,6 +56,7 @@ export type Database = {
           about_title?: string | null
           benefits_receive?: Json | null
           bonus_text?: string | null
+          channel_name?: string | null
           channel_url?: string | null
           created_at?: string
           cta_text?: string | null
@@ -87,6 +89,7 @@ export type Database = {
           about_title?: string | null
           benefits_receive?: Json | null
           bonus_text?: string | null
+          channel_name?: string | null
           channel_url?: string | null
           created_at?: string
           cta_text?: string | null

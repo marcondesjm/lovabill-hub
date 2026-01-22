@@ -43,6 +43,7 @@ type PreviewProps = {
     cta_text: string;
     whatsapp_number: string;
     channel_url: string;
+    channel_name: string;
     about_name: string;
     about_title: string;
     about_description: string;
@@ -243,7 +244,7 @@ export const LandingPagePreview = ({ formData }: PreviewProps) => {
                 <Youtube className="w-6 h-6 text-primary-foreground" />
                 <div className="text-left">
                   <h3 className="text-sm font-bold text-primary-foreground">
-                    Mestre do Lovable
+                    {formData.channel_name || "Mestre do Lovable"}
                   </h3>
                   <p className="text-primary-foreground/90 text-xs">
                     YouTube com tutoriais e dicas!

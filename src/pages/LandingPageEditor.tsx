@@ -35,6 +35,7 @@ const LandingPageEditor = () => {
     cta_text: "Falar no WhatsApp",
     whatsapp_number: "",
     channel_url: "",
+    channel_name: "Mestre do Lovable",
     is_published: true,
     meta_title: "",
     meta_description: "",
@@ -183,6 +184,7 @@ const LandingPageEditor = () => {
         cta_text: data.cta_text || "",
         whatsapp_number: data.whatsapp_number || "",
         channel_url: data.channel_url || "",
+        channel_name: data.channel_name || "Mestre do Lovable",
         is_published: data.is_published || false,
         meta_title: data.meta_title || "",
         meta_description: data.meta_description || "",
@@ -650,6 +652,16 @@ const LandingPageEditor = () => {
                   <p className="text-sm text-muted-foreground">
                     Apenas números, com código do país e DDD
                   </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="channel_name">Nome do Canal YouTube</Label>
+                  <Input
+                    id="channel_name"
+                    value={formData.channel_name}
+                    onChange={(e) => setFormData({ ...formData, channel_name: e.target.value })}
+                    placeholder="Nome do seu canal"
+                  />
                 </div>
 
                 <div className="space-y-2">

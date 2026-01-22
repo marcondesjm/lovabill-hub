@@ -47,6 +47,7 @@ type LandingPageData = {
   cta_text: string | null;
   whatsapp_number: string | null;
   channel_url: string | null;
+  channel_name: string | null;
   is_published: boolean | null;
   meta_title: string | null;
   meta_description: string | null;
@@ -368,7 +369,7 @@ const DynamicLandingPage = () => {
                       <Youtube className="w-12 h-12 text-primary-foreground" />
                       <div className="text-left">
                         <h3 className="text-2xl font-bold text-primary-foreground mb-1">
-                          Mestre do Lovable
+                          {pageData.channel_name || "Mestre do Lovable"}
                         </h3>
                         <p className="text-primary-foreground/90 text-sm">
                           Confira meu canal no YouTube com tutoriais, dicas e tudo sobre
