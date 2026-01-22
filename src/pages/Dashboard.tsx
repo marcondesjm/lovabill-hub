@@ -7,6 +7,7 @@ import { Loader2, Plus, LogOut, Shield } from "lucide-react";
 import { User } from "@supabase/supabase-js";
 import { LandingPageList } from "@/components/dashboard/LandingPageList";
 import { useAdminCheck } from "@/hooks/useAdminCheck";
+import { DeveloperDonation } from "@/components/dashboard/DeveloperDonation";
 
 const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -62,6 +63,7 @@ const Dashboard = () => {
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold">Minhas Landing Pages</h1>
           <div className="flex gap-2">
+            <DeveloperDonation />
             {isAdmin && (
               <Button variant="outline" onClick={() => navigate("/admin")}>
                 <Shield className="mr-2 h-4 w-4" />
