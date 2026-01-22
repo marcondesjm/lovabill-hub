@@ -11,6 +11,7 @@ import { AboutMe } from "@/components/AboutMe";
 import { Testimonials } from "@/components/Testimonials";
 import { FAQ } from "@/components/FAQ";
 import { CTAButton } from "@/components/CTAButton";
+import { ImportantNotices } from "@/components/ImportantNotices";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -31,6 +32,7 @@ const Index = () => {
       <Security />
       <AboutMe />
       <Testimonials />
+      <ImportantNotices />
       <FAQ />
       <CTAButton />
       <footer className="py-8 px-4 text-center text-muted-foreground border-t border-border">
