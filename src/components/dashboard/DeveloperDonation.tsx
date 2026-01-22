@@ -42,9 +42,9 @@ export const DeveloperDonation = () => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="border-destructive/50 text-destructive hover:bg-destructive/10">
-          <Heart className="mr-2 h-4 w-4 fill-destructive" />
-          Apoiar Desenvolvedor
+        <Button variant="outline" className="border-destructive/50 text-destructive hover:bg-destructive/10" size="default">
+          <Heart className="h-4 w-4 fill-destructive md:mr-2" />
+          <span className="hidden md:inline">Apoiar Desenvolvedor</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">

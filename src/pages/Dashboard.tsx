@@ -60,29 +60,54 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Minhas Landing Pages</h1>
-          <div className="flex gap-2">
-            <DeveloperDonation />
-            {isAdmin && (
-              <Button variant="outline" onClick={() => navigate("/admin")}>
-                <Shield className="mr-2 h-4 w-4" />
-                Painel Admin
+        <div className="container mx-auto px-4 py-4">
+          {/* Desktop Layout */}
+          <div className="hidden md:flex justify-between items-center">
+            <h1 className="text-2xl font-bold">Minhas Landing Pages</h1>
+            <div className="flex gap-2">
+              <DeveloperDonation />
+              {isAdmin && (
+                <Button variant="outline" onClick={() => navigate("/admin")}>
+                  <Shield className="mr-2 h-4 w-4" />
+                  Painel Admin
+                </Button>
+              )}
+              <Button onClick={handleCreateNew}>
+                <Plus className="mr-2 h-4 w-4" />
+                Nova Landing Page
               </Button>
-            )}
-            <Button onClick={handleCreateNew}>
-              <Plus className="mr-2 h-4 w-4" />
-              Nova Landing Page
-            </Button>
-            <Button variant="outline" onClick={handleSignOut}>
-              <LogOut className="mr-2 h-4 w-4" />
-              Sair
-            </Button>
+              <Button variant="outline" onClick={handleSignOut}>
+                <LogOut className="mr-2 h-4 w-4" />
+                Sair
+              </Button>
+            </div>
+          </div>
+
+          {/* Mobile Layout */}
+          <div className="md:hidden space-y-4">
+            <div className="flex justify-between items-center">
+              <h1 className="text-xl font-bold">Minhas Landing Pages</h1>
+              <Button variant="outline" size="icon" onClick={handleSignOut}>
+                <LogOut className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button onClick={handleCreateNew} className="flex-1">
+                <Plus className="mr-2 h-4 w-4" />
+                Nova Landing Page
+              </Button>
+              <DeveloperDonation />
+              {isAdmin && (
+                <Button variant="outline" size="icon" onClick={() => navigate("/admin")}>
+                  <Shield className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-6 md:py-8">
         {user && <LandingPageList userId={user.id} />}
       </main>
     </div>
