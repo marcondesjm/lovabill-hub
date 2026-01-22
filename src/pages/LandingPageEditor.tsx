@@ -121,6 +121,10 @@ const LandingPageEditor = () => {
         answer: "Sim, você pode escolher o pacote que melhor atende suas necessidades."
       }
     ],
+    pix_enabled: false,
+    pix_key: "",
+    pix_name: "",
+    donation_title: "Apoie meu trabalho",
   });
 
   useEffect(() => {
@@ -200,6 +204,10 @@ const LandingPageEditor = () => {
         pricing_plans: (Array.isArray(data.pricing_plans) ? data.pricing_plans : []) as any[],
         testimonials: (Array.isArray(data.testimonials) ? data.testimonials : []) as any[],
         faq_items: (Array.isArray(data.faq_items) ? data.faq_items : []) as any[],
+        pix_enabled: data.pix_enabled || false,
+        pix_key: data.pix_key || "",
+        pix_name: data.pix_name || "",
+        donation_title: data.donation_title || "Apoie meu trabalho",
       });
     } catch (error: any) {
       toast({
@@ -673,6 +681,58 @@ const LandingPageEditor = () => {
                     placeholder="https://youtube.com/@seu-canal"
                   />
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* PIX Donation Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle>💚 Doações PIX</CardTitle>
+                <CardDescription>Configure a seção de doações via PIX</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="pix_enabled"
+                    checked={formData.pix_enabled}
+                    onCheckedChange={(checked) => setFormData({ ...formData, pix_enabled: checked })}
+                  />
+                  <Label htmlFor="pix_enabled">Habilitar seção de doações PIX</Label>
+                </div>
+
+                {formData.pix_enabled && (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="donation_title">Título da seção</Label>
+                      <Input
+                        id="donation_title"
+                        value={formData.donation_title}
+                        onChange={(e) => setFormData({ ...formData, donation_title: e.target.value })}
+                        placeholder="Apoie meu trabalho"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="pix_key">Chave PIX</Label>
+                      <Input
+                        id="pix_key"
+                        value={formData.pix_key}
+                        onChange={(e) => setFormData({ ...formData, pix_key: e.target.value })}
+                        placeholder="Telefone, CPF, email ou chave aleatória"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="pix_name">Nome do destinatário</Label>
+                      <Input
+                        id="pix_name"
+                        value={formData.pix_name}
+                        onChange={(e) => setFormData({ ...formData, pix_name: e.target.value })}
+                        placeholder="Nome que aparece ao pagar"
+                      />
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

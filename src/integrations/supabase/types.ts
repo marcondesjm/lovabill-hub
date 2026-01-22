@@ -28,6 +28,7 @@ export type Database = {
           created_at: string
           cta_text: string | null
           delivery_time: string | null
+          donation_title: string | null
           faq_items: Json | null
           hero_badge: string | null
           hero_image_url: string | null
@@ -39,6 +40,9 @@ export type Database = {
           meta_description: string | null
           meta_title: string | null
           offer_text: string | null
+          pix_enabled: boolean | null
+          pix_key: string | null
+          pix_name: string | null
           pricing_plans: Json | null
           security_items: Json | null
           slug: string
@@ -61,6 +65,7 @@ export type Database = {
           created_at?: string
           cta_text?: string | null
           delivery_time?: string | null
+          donation_title?: string | null
           faq_items?: Json | null
           hero_badge?: string | null
           hero_image_url?: string | null
@@ -72,6 +77,9 @@ export type Database = {
           meta_description?: string | null
           meta_title?: string | null
           offer_text?: string | null
+          pix_enabled?: boolean | null
+          pix_key?: string | null
+          pix_name?: string | null
           pricing_plans?: Json | null
           security_items?: Json | null
           slug: string
@@ -94,6 +102,7 @@ export type Database = {
           created_at?: string
           cta_text?: string | null
           delivery_time?: string | null
+          donation_title?: string | null
           faq_items?: Json | null
           hero_badge?: string | null
           hero_image_url?: string | null
@@ -105,6 +114,9 @@ export type Database = {
           meta_description?: string | null
           meta_title?: string | null
           offer_text?: string | null
+          pix_enabled?: boolean | null
+          pix_key?: string | null
+          pix_name?: string | null
           pricing_plans?: Json | null
           security_items?: Json | null
           slug?: string

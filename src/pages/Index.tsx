@@ -12,6 +12,7 @@ import { Testimonials } from "@/components/Testimonials";
 import { FAQ } from "@/components/FAQ";
 import { CTAButton } from "@/components/CTAButton";
 import { ImportantNotices } from "@/components/ImportantNotices";
+import { PixDonation } from "@/components/PixDonation";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -34,6 +35,11 @@ const Index = () => {
       <Testimonials />
       <ImportantNotices />
       <FAQ />
+      <PixDonation 
+        pixKey="48996029392" 
+        pixName="MARCONDES JORGE MACHADO" 
+        title="Apoie meu trabalho"
+      />
       <CTAButton />
       <footer className="py-8 px-4 text-center text-muted-foreground border-t border-border">
         <p>© 2024 Créditos Lovable. Todos os direitos reservados.</p>
