@@ -84,34 +84,38 @@ export const LandingPageList = ({ userId }: { userId: string }) => {
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
       {pages.map((page) => (
-        <Card key={page.id}>
-          <CardHeader>
-            <CardTitle className="text-lg">{page.hero_title}</CardTitle>
-            <CardDescription>
-              /{page.slug}
+        <Card key={page.id} className="flex flex-col">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base sm:text-lg line-clamp-2">{page.hero_title}</CardTitle>
+            <CardDescription className="flex flex-col sm:flex-row sm:items-center gap-1">
+              <span className="truncate max-w-[180px]">/{page.slug}</span>
               {page.is_published ? (
-                <span className="ml-2 text-green-600">● Publicada</span>
+                <span className="text-green-600 text-xs sm:text-sm">● Publicada</span>
               ) : (
-                <span className="ml-2 text-gray-500">● Rascunho</span>
+                <span className="text-gray-500 text-xs sm:text-sm">● Rascunho</span>
               )}
             </CardDescription>
           </CardHeader>
-          <CardContent className="flex gap-2">
+          <CardContent className="flex gap-2 pt-0 mt-auto">
             <Button
               size="sm"
               variant="outline"
               onClick={() => navigate(`/dashboard/editor/${page.id}`)}
+              className="flex-1 sm:flex-none"
             >
-              <Edit className="h-4 w-4" />
+              <Edit className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Editar</span>
             </Button>
             <Button
               size="sm"
               variant="outline"
               onClick={() => window.open(`/${page.slug}`, "_blank")}
+              className="flex-1 sm:flex-none"
             >
-              <Eye className="h-4 w-4" />
+              <Eye className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Ver</span>
             </Button>
             <Button
               size="sm"
