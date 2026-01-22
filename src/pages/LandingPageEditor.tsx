@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -6,12 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft, Save, Upload, X, Plus, Trash2, Eye, EyeOff, ChevronUp, ChevronDown } from "lucide-react";
-import { ReorderButtons } from "@/components/editor/ReorderButtons";
+import { Loader2, ArrowLeft, Save, Upload, X, Plus, Trash2, Eye, EyeOff, GripVertical } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LandingPagePreview } from "@/components/editor/LandingPagePreview";
+import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 
 export type EditorSection = "basic" | "pricing" | "about" | "content" | "testimonials" | "seo";
 const LandingPageEditor = () => {
@@ -43,22 +43,6 @@ const LandingPageEditor = () => {
     const [item] = newArray.splice(fromIndex, 1);
     newArray.splice(toIndex, 0, item);
     return newArray;
-  };
-
-  const moveItemUp = (arrayKey: keyof typeof formData, index: number) => {
-    const array = formData[arrayKey] as any[];
-    if (index > 0) {
-      const newArray = moveItem(array, index, index - 1);
-      setFormData({ ...formData, [arrayKey]: newArray });
-    }
-  };
-
-  const moveItemDown = (arrayKey: keyof typeof formData, index: number) => {
-    const array = formData[arrayKey] as any[];
-    if (index < array.length - 1) {
-      const newArray = moveItem(array, index, index + 1);
-      setFormData({ ...formData, [arrayKey]: newArray });
-    }
   };
 
   const [formData, setFormData] = useState({
@@ -780,7 +764,7 @@ const LandingPageEditor = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Tabela de Preços</CardTitle>
-                <CardDescription>Configure os pacotes de créditos</CardDescription>
+                <CardDescription>Configure os pacotes de créditos - arraste para reordenar</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <Button
@@ -798,75 +782,93 @@ const LandingPageEditor = () => {
                   Adicionar Pacote
                 </Button>
 
-                {formData.pricing_plans.map((plan: any, index: number) => (
-                  <Card key={index}>
-                    <CardContent className="pt-6 space-y-4">
-                      <div className="flex justify-between items-center">
-                        <h4 className="font-semibold">Pacote {index + 1}</h4>
-                        <div className="flex gap-2">
-                          <ReorderButtons
-                            index={index}
-                            totalItems={formData.pricing_plans.length}
-                            onMoveUp={() => moveItemUp("pricing_plans", index)}
-                            onMoveDown={() => moveItemDown("pricing_plans", index)}
-                          />
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => {
-                              const newPlans = [...formData.pricing_plans];
-                              newPlans.splice(index, 1);
-                              setFormData({ ...formData, pricing_plans: newPlans });
-                            }}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
+                <DragDropContext onDragEnd={(result) => {
+                  if (!result.destination) return;
+                  const newPlans = moveItem(formData.pricing_plans, result.source.index, result.destination.index);
+                  setFormData({ ...formData, pricing_plans: newPlans });
+                }}>
+                  <Droppable droppableId="pricing_plans">
+                    {(provided) => (
+                      <div ref={provided.innerRef} {...provided.droppableProps} className="space-y-4">
+                        {formData.pricing_plans.map((plan: any, index: number) => (
+                          <Draggable key={`plan-${index}`} draggableId={`plan-${index}`} index={index}>
+                            {(provided, snapshot) => (
+                              <Card
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                className={snapshot.isDragging ? "shadow-lg" : ""}
+                              >
+                                <CardContent className="pt-6 space-y-4">
+                                  <div className="flex justify-between items-center">
+                                    <div className="flex items-center gap-2">
+                                      <div {...provided.dragHandleProps} className="cursor-grab active:cursor-grabbing p-1 hover:bg-muted rounded">
+                                        <GripVertical className="h-5 w-5 text-muted-foreground" />
+                                      </div>
+                                      <h4 className="font-semibold">Pacote {index + 1}</h4>
+                                    </div>
+                                    <Button
+                                      variant="destructive"
+                                      size="sm"
+                                      onClick={() => {
+                                        const newPlans = [...formData.pricing_plans];
+                                        newPlans.splice(index, 1);
+                                        setFormData({ ...formData, pricing_plans: newPlans });
+                                      }}
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+
+                                  <div className="grid grid-cols-3 gap-4">
+                                    <div className="space-y-2">
+                                      <Label>Créditos</Label>
+                                      <Input
+                                        value={plan.credits}
+                                        onChange={(e) => {
+                                          const newPlans = [...formData.pricing_plans];
+                                          newPlans[index] = { ...plan, credits: e.target.value };
+                                          setFormData({ ...formData, pricing_plans: newPlans });
+                                        }}
+                                        placeholder="100"
+                                      />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                      <Label>Preço (R$)</Label>
+                                      <Input
+                                        value={plan.price}
+                                        onChange={(e) => {
+                                          const newPlans = [...formData.pricing_plans];
+                                          newPlans[index] = { ...plan, price: e.target.value };
+                                          setFormData({ ...formData, pricing_plans: newPlans });
+                                        }}
+                                        placeholder="97"
+                                      />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                      <Label>Bônus</Label>
+                                      <Input
+                                        value={plan.bonus}
+                                        onChange={(e) => {
+                                          const newPlans = [...formData.pricing_plans];
+                                          newPlans[index] = { ...plan, bonus: e.target.value };
+                                          setFormData({ ...formData, pricing_plans: newPlans });
+                                        }}
+                                        placeholder="50"
+                                      />
+                                    </div>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            )}
+                          </Draggable>
+                        ))}
+                        {provided.placeholder}
                       </div>
-
-                      <div className="grid grid-cols-3 gap-4">
-                        <div className="space-y-2">
-                          <Label>Créditos</Label>
-                          <Input
-                            value={plan.credits}
-                            onChange={(e) => {
-                              const newPlans = [...formData.pricing_plans];
-                              newPlans[index] = { ...plan, credits: e.target.value };
-                              setFormData({ ...formData, pricing_plans: newPlans });
-                            }}
-                            placeholder="100"
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label>Preço (R$)</Label>
-                          <Input
-                            value={plan.price}
-                            onChange={(e) => {
-                              const newPlans = [...formData.pricing_plans];
-                              newPlans[index] = { ...plan, price: e.target.value };
-                              setFormData({ ...formData, pricing_plans: newPlans });
-                            }}
-                            placeholder="97"
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label>Bônus</Label>
-                          <Input
-                            value={plan.bonus}
-                            onChange={(e) => {
-                              const newPlans = [...formData.pricing_plans];
-                              newPlans[index] = { ...plan, bonus: e.target.value };
-                              setFormData({ ...formData, pricing_plans: newPlans });
-                            }}
-                            placeholder="50"
-                          />
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                    )}
+                  </Droppable>
+                </DragDropContext>
               </CardContent>
             </Card>
           </TabsContent>
@@ -942,6 +944,7 @@ const LandingPageEditor = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Destaques (Highlights)</CardTitle>
+                <CardDescription>Arraste para reordenar</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <Button
@@ -959,61 +962,79 @@ const LandingPageEditor = () => {
                   Adicionar Destaque
                 </Button>
 
-                {formData.about_highlights.map((highlight: any, index: number) => (
-                  <Card key={index}>
-                    <CardContent className="pt-6 space-y-4">
-                      <div className="flex justify-between items-center">
-                        <h4 className="font-semibold">Destaque {index + 1}</h4>
-                        <div className="flex gap-2">
-                          <ReorderButtons
-                            index={index}
-                            totalItems={formData.about_highlights.length}
-                            onMoveUp={() => moveItemUp("about_highlights", index)}
-                            onMoveDown={() => moveItemDown("about_highlights", index)}
-                          />
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => {
-                              const newHighlights = [...formData.about_highlights];
-                              newHighlights.splice(index, 1);
-                              setFormData({ ...formData, about_highlights: newHighlights });
-                            }}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
+                <DragDropContext onDragEnd={(result) => {
+                  if (!result.destination) return;
+                  const newHighlights = moveItem(formData.about_highlights, result.source.index, result.destination.index);
+                  setFormData({ ...formData, about_highlights: newHighlights });
+                }}>
+                  <Droppable droppableId="about_highlights">
+                    {(provided) => (
+                      <div ref={provided.innerRef} {...provided.droppableProps} className="space-y-4">
+                        {formData.about_highlights.map((highlight: any, index: number) => (
+                          <Draggable key={`highlight-${index}`} draggableId={`highlight-${index}`} index={index}>
+                            {(provided, snapshot) => (
+                              <Card
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                className={snapshot.isDragging ? "shadow-lg" : ""}
+                              >
+                                <CardContent className="pt-6 space-y-4">
+                                  <div className="flex justify-between items-center">
+                                    <div className="flex items-center gap-2">
+                                      <div {...provided.dragHandleProps} className="cursor-grab active:cursor-grabbing p-1 hover:bg-muted rounded">
+                                        <GripVertical className="h-5 w-5 text-muted-foreground" />
+                                      </div>
+                                      <h4 className="font-semibold">Destaque {index + 1}</h4>
+                                    </div>
+                                    <Button
+                                      variant="destructive"
+                                      size="sm"
+                                      onClick={() => {
+                                        const newHighlights = [...formData.about_highlights];
+                                        newHighlights.splice(index, 1);
+                                        setFormData({ ...formData, about_highlights: newHighlights });
+                                      }}
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </div>
 
-                      <div className="space-y-2">
-                        <Label>Título</Label>
-                        <Input
-                          value={highlight.title}
-                          onChange={(e) => {
-                            const newHighlights = [...formData.about_highlights];
-                            newHighlights[index] = { ...highlight, title: e.target.value };
-                            setFormData({ ...formData, about_highlights: newHighlights });
-                          }}
-                          placeholder="Criador da Bíblia do Lovable"
-                        />
-                      </div>
+                                  <div className="space-y-2">
+                                    <Label>Título</Label>
+                                    <Input
+                                      value={highlight.title}
+                                      onChange={(e) => {
+                                        const newHighlights = [...formData.about_highlights];
+                                        newHighlights[index] = { ...highlight, title: e.target.value };
+                                        setFormData({ ...formData, about_highlights: newHighlights });
+                                      }}
+                                      placeholder="Criador da Bíblia do Lovable"
+                                    />
+                                  </div>
 
-                      <div className="space-y-2">
-                        <Label>Descrição</Label>
-                        <Textarea
-                          value={highlight.description}
-                          onChange={(e) => {
-                            const newHighlights = [...formData.about_highlights];
-                            newHighlights[index] = { ...highlight, description: e.target.value };
-                            setFormData({ ...formData, about_highlights: newHighlights });
-                          }}
-                          placeholder="O guia definitivo com todas as melhores práticas"
-                          rows={2}
-                        />
+                                  <div className="space-y-2">
+                                    <Label>Descrição</Label>
+                                    <Textarea
+                                      value={highlight.description}
+                                      onChange={(e) => {
+                                        const newHighlights = [...formData.about_highlights];
+                                        newHighlights[index] = { ...highlight, description: e.target.value };
+                                        setFormData({ ...formData, about_highlights: newHighlights });
+                                      }}
+                                      placeholder="O guia definitivo com todas as melhores práticas"
+                                      rows={2}
+                                    />
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            )}
+                          </Draggable>
+                        ))}
+                        {provided.placeholder}
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                    )}
+                  </Droppable>
+                </DragDropContext>
               </CardContent>
             </Card>
           </TabsContent>
@@ -1023,6 +1044,7 @@ const LandingPageEditor = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Por Que Comprar de Mim?</CardTitle>
+                <CardDescription>Arraste para reordenar</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <Button
@@ -1037,68 +1059,87 @@ const LandingPageEditor = () => {
                   Adicionar Item
                 </Button>
 
-                {formData.why_buy_items.map((item: any, index: number) => (
-                  <Card key={index}>
-                    <CardContent className="pt-6 space-y-4">
-                      <div className="flex justify-between items-center">
-                        <h4 className="font-semibold">Item {index + 1}</h4>
-                        <div className="flex gap-2">
-                          <ReorderButtons
-                            index={index}
-                            totalItems={formData.why_buy_items.length}
-                            onMoveUp={() => moveItemUp("why_buy_items", index)}
-                            onMoveDown={() => moveItemDown("why_buy_items", index)}
-                          />
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => {
-                              const newItems = [...formData.why_buy_items];
-                              newItems.splice(index, 1);
-                              setFormData({ ...formData, why_buy_items: newItems });
-                            }}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
+                <DragDropContext onDragEnd={(result) => {
+                  if (!result.destination) return;
+                  const newItems = moveItem(formData.why_buy_items, result.source.index, result.destination.index);
+                  setFormData({ ...formData, why_buy_items: newItems });
+                }}>
+                  <Droppable droppableId="why_buy_items">
+                    {(provided) => (
+                      <div ref={provided.innerRef} {...provided.droppableProps} className="space-y-4">
+                        {formData.why_buy_items.map((item: any, index: number) => (
+                          <Draggable key={`why-${index}`} draggableId={`why-${index}`} index={index}>
+                            {(provided, snapshot) => (
+                              <Card
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                className={snapshot.isDragging ? "shadow-lg" : ""}
+                              >
+                                <CardContent className="pt-6 space-y-4">
+                                  <div className="flex justify-between items-center">
+                                    <div className="flex items-center gap-2">
+                                      <div {...provided.dragHandleProps} className="cursor-grab active:cursor-grabbing p-1 hover:bg-muted rounded">
+                                        <GripVertical className="h-5 w-5 text-muted-foreground" />
+                                      </div>
+                                      <h4 className="font-semibold">Item {index + 1}</h4>
+                                    </div>
+                                    <Button
+                                      variant="destructive"
+                                      size="sm"
+                                      onClick={() => {
+                                        const newItems = [...formData.why_buy_items];
+                                        newItems.splice(index, 1);
+                                        setFormData({ ...formData, why_buy_items: newItems });
+                                      }}
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </div>
 
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label>Título</Label>
-                          <Input
-                            value={item.title}
-                            onChange={(e) => {
-                              const newItems = [...formData.why_buy_items];
-                              newItems[index] = { ...item, title: e.target.value };
-                              setFormData({ ...formData, why_buy_items: newItems });
-                            }}
-                            placeholder="900+ membros satisfeitos"
-                          />
-                        </div>
+                                  <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                      <Label>Título</Label>
+                                      <Input
+                                        value={item.title}
+                                        onChange={(e) => {
+                                          const newItems = [...formData.why_buy_items];
+                                          newItems[index] = { ...item, title: e.target.value };
+                                          setFormData({ ...formData, why_buy_items: newItems });
+                                        }}
+                                        placeholder="900+ membros satisfeitos"
+                                      />
+                                    </div>
 
-                        <div className="space-y-2">
-                          <Label>Ícone</Label>
-                          <Input
-                            value={item.icon}
-                            onChange={(e) => {
-                              const newItems = [...formData.why_buy_items];
-                              newItems[index] = { ...item, icon: e.target.value };
-                              setFormData({ ...formData, why_buy_items: newItems });
-                            }}
-                            placeholder="users"
-                          />
-                        </div>
+                                    <div className="space-y-2">
+                                      <Label>Ícone</Label>
+                                      <Input
+                                        value={item.icon}
+                                        onChange={(e) => {
+                                          const newItems = [...formData.why_buy_items];
+                                          newItems[index] = { ...item, icon: e.target.value };
+                                          setFormData({ ...formData, why_buy_items: newItems });
+                                        }}
+                                        placeholder="users"
+                                      />
+                                    </div>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            )}
+                          </Draggable>
+                        ))}
+                        {provided.placeholder}
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                    )}
+                  </Droppable>
+                </DragDropContext>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
                 <CardTitle>Como Solicitar (Passos)</CardTitle>
+                <CardDescription>Arraste para reordenar</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <Button
@@ -1116,65 +1157,74 @@ const LandingPageEditor = () => {
                   Adicionar Passo
                 </Button>
 
-                {formData.how_to_steps.map((step: any, index: number) => (
-                  <Card key={index}>
-                    <CardContent className="pt-6 space-y-4">
-                      <div className="flex justify-between items-center">
-                        <h4 className="font-semibold">Passo {index + 1}</h4>
-                        <div className="flex gap-2">
-                          <ReorderButtons
-                            index={index}
-                            totalItems={formData.how_to_steps.length}
-                            onMoveUp={() => {
-                              const newSteps = moveItem(formData.how_to_steps, index, index - 1);
-                              // Atualizar números dos passos
-                              const renumbered = newSteps.map((s: any, i: number) => ({ ...s, step: i + 1 }));
-                              setFormData({ ...formData, how_to_steps: renumbered });
-                            }}
-                            onMoveDown={() => {
-                              const newSteps = moveItem(formData.how_to_steps, index, index + 1);
-                              // Atualizar números dos passos
-                              const renumbered = newSteps.map((s: any, i: number) => ({ ...s, step: i + 1 }));
-                              setFormData({ ...formData, how_to_steps: renumbered });
-                            }}
-                          />
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => {
-                              const newSteps = [...formData.how_to_steps];
-                              newSteps.splice(index, 1);
-                              // Renumerar passos
-                              const renumbered = newSteps.map((s: any, i: number) => ({ ...s, step: i + 1 }));
-                              setFormData({ ...formData, how_to_steps: renumbered });
-                            }}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
+                <DragDropContext onDragEnd={(result) => {
+                  if (!result.destination) return;
+                  const newSteps = moveItem(formData.how_to_steps, result.source.index, result.destination.index);
+                  const renumbered = newSteps.map((s: any, i: number) => ({ ...s, step: i + 1 }));
+                  setFormData({ ...formData, how_to_steps: renumbered });
+                }}>
+                  <Droppable droppableId="how_to_steps">
+                    {(provided) => (
+                      <div ref={provided.innerRef} {...provided.droppableProps} className="space-y-4">
+                        {formData.how_to_steps.map((step: any, index: number) => (
+                          <Draggable key={`step-${index}`} draggableId={`step-${index}`} index={index}>
+                            {(provided, snapshot) => (
+                              <Card
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                className={snapshot.isDragging ? "shadow-lg" : ""}
+                              >
+                                <CardContent className="pt-6 space-y-4">
+                                  <div className="flex justify-between items-center">
+                                    <div className="flex items-center gap-2">
+                                      <div {...provided.dragHandleProps} className="cursor-grab active:cursor-grabbing p-1 hover:bg-muted rounded">
+                                        <GripVertical className="h-5 w-5 text-muted-foreground" />
+                                      </div>
+                                      <h4 className="font-semibold">Passo {index + 1}</h4>
+                                    </div>
+                                    <Button
+                                      variant="destructive"
+                                      size="sm"
+                                      onClick={() => {
+                                        const newSteps = [...formData.how_to_steps];
+                                        newSteps.splice(index, 1);
+                                        const renumbered = newSteps.map((s: any, i: number) => ({ ...s, step: i + 1 }));
+                                        setFormData({ ...formData, how_to_steps: renumbered });
+                                      }}
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </div>
 
-                      <div className="space-y-2">
-                        <Label>Título do Passo</Label>
-                        <Input
-                          value={step.title}
-                          onChange={(e) => {
-                            const newSteps = [...formData.how_to_steps];
-                            newSteps[index] = { ...step, title: e.target.value };
-                            setFormData({ ...formData, how_to_steps: newSteps });
-                          }}
-                          placeholder="Entre na sua conta Lovable.dev"
-                        />
+                                  <div className="space-y-2">
+                                    <Label>Título do Passo</Label>
+                                    <Input
+                                      value={step.title}
+                                      onChange={(e) => {
+                                        const newSteps = [...formData.how_to_steps];
+                                        newSteps[index] = { ...step, title: e.target.value };
+                                        setFormData({ ...formData, how_to_steps: newSteps });
+                                      }}
+                                      placeholder="Entre na sua conta Lovable.dev"
+                                    />
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            )}
+                          </Draggable>
+                        ))}
+                        {provided.placeholder}
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                    )}
+                  </Droppable>
+                </DragDropContext>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
                 <CardTitle>O Que Recebe</CardTitle>
+                <CardDescription>Arraste para reordenar</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <Button
@@ -1189,43 +1239,62 @@ const LandingPageEditor = () => {
                   Adicionar Benefício
                 </Button>
 
-                {formData.benefits_receive.map((benefit: string, index: number) => (
-                  <div key={index} className="flex gap-2 items-center">
-                    <ReorderButtons
-                      index={index}
-                      totalItems={formData.benefits_receive.length}
-                      onMoveUp={() => moveItemUp("benefits_receive", index)}
-                      onMoveDown={() => moveItemDown("benefits_receive", index)}
-                    />
-                    <Input
-                      value={benefit}
-                      onChange={(e) => {
-                        const newBenefits = [...formData.benefits_receive];
-                        newBenefits[index] = e.target.value;
-                        setFormData({ ...formData, benefits_receive: newBenefits });
-                      }}
-                      placeholder="Créditos válidos diretamente na sua conta"
-                      className="flex-1"
-                    />
-                    <Button
-                      variant="destructive"
-                      size="icon"
-                      onClick={() => {
-                        const newBenefits = [...formData.benefits_receive];
-                        newBenefits.splice(index, 1);
-                        setFormData({ ...formData, benefits_receive: newBenefits });
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
+                <DragDropContext onDragEnd={(result) => {
+                  if (!result.destination) return;
+                  const newBenefits = moveItem(formData.benefits_receive, result.source.index, result.destination.index);
+                  setFormData({ ...formData, benefits_receive: newBenefits });
+                }}>
+                  <Droppable droppableId="benefits_receive">
+                    {(provided) => (
+                      <div ref={provided.innerRef} {...provided.droppableProps} className="space-y-2">
+                        {formData.benefits_receive.map((benefit: string, index: number) => (
+                          <Draggable key={`benefit-${index}`} draggableId={`benefit-${index}`} index={index}>
+                            {(provided, snapshot) => (
+                              <div
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                className={`flex gap-2 items-center ${snapshot.isDragging ? "bg-muted rounded-lg p-2" : ""}`}
+                              >
+                                <div {...provided.dragHandleProps} className="cursor-grab active:cursor-grabbing p-1 hover:bg-muted rounded">
+                                  <GripVertical className="h-5 w-5 text-muted-foreground" />
+                                </div>
+                                <Input
+                                  value={benefit}
+                                  onChange={(e) => {
+                                    const newBenefits = [...formData.benefits_receive];
+                                    newBenefits[index] = e.target.value;
+                                    setFormData({ ...formData, benefits_receive: newBenefits });
+                                  }}
+                                  placeholder="Créditos válidos diretamente na sua conta"
+                                  className="flex-1"
+                                />
+                                <Button
+                                  variant="destructive"
+                                  size="icon"
+                                  onClick={() => {
+                                    const newBenefits = [...formData.benefits_receive];
+                                    newBenefits.splice(index, 1);
+                                    setFormData({ ...formData, benefits_receive: newBenefits });
+                                  }}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            )}
+                          </Draggable>
+                        ))}
+                        {provided.placeholder}
+                      </div>
+                    )}
+                  </Droppable>
+                </DragDropContext>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
                 <CardTitle>Segurança</CardTitle>
+                <CardDescription>Arraste para reordenar</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <Button
@@ -1240,43 +1309,62 @@ const LandingPageEditor = () => {
                   Adicionar Item de Segurança
                 </Button>
 
-                {formData.security_items.map((item: string, index: number) => (
-                  <div key={index} className="flex gap-2 items-center">
-                    <ReorderButtons
-                      index={index}
-                      totalItems={formData.security_items.length}
-                      onMoveUp={() => moveItemUp("security_items", index)}
-                      onMoveDown={() => moveItemDown("security_items", index)}
-                    />
-                    <Input
-                      value={item}
-                      onChange={(e) => {
-                        const newItems = [...formData.security_items];
-                        newItems[index] = e.target.value;
-                        setFormData({ ...formData, security_items: newItems });
-                      }}
-                      placeholder="Nenhum dado sensível é solicitado"
-                      className="flex-1"
-                    />
-                    <Button
-                      variant="destructive"
-                      size="icon"
-                      onClick={() => {
-                        const newItems = [...formData.security_items];
-                        newItems.splice(index, 1);
-                        setFormData({ ...formData, security_items: newItems });
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
+                <DragDropContext onDragEnd={(result) => {
+                  if (!result.destination) return;
+                  const newItems = moveItem(formData.security_items, result.source.index, result.destination.index);
+                  setFormData({ ...formData, security_items: newItems });
+                }}>
+                  <Droppable droppableId="security_items">
+                    {(provided) => (
+                      <div ref={provided.innerRef} {...provided.droppableProps} className="space-y-2">
+                        {formData.security_items.map((item: string, index: number) => (
+                          <Draggable key={`security-${index}`} draggableId={`security-${index}`} index={index}>
+                            {(provided, snapshot) => (
+                              <div
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                className={`flex gap-2 items-center ${snapshot.isDragging ? "bg-muted rounded-lg p-2" : ""}`}
+                              >
+                                <div {...provided.dragHandleProps} className="cursor-grab active:cursor-grabbing p-1 hover:bg-muted rounded">
+                                  <GripVertical className="h-5 w-5 text-muted-foreground" />
+                                </div>
+                                <Input
+                                  value={item}
+                                  onChange={(e) => {
+                                    const newItems = [...formData.security_items];
+                                    newItems[index] = e.target.value;
+                                    setFormData({ ...formData, security_items: newItems });
+                                  }}
+                                  placeholder="Nenhum dado sensível é solicitado"
+                                  className="flex-1"
+                                />
+                                <Button
+                                  variant="destructive"
+                                  size="icon"
+                                  onClick={() => {
+                                    const newItems = [...formData.security_items];
+                                    newItems.splice(index, 1);
+                                    setFormData({ ...formData, security_items: newItems });
+                                  }}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            )}
+                          </Draggable>
+                        ))}
+                        {provided.placeholder}
+                      </div>
+                    )}
+                  </Droppable>
+                </DragDropContext>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
                 <CardTitle>FAQ (Perguntas Frequentes)</CardTitle>
+                <CardDescription>Arraste para reordenar</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <Button
@@ -1291,61 +1379,79 @@ const LandingPageEditor = () => {
                   Adicionar Pergunta
                 </Button>
 
-                {formData.faq_items.map((faq: any, index: number) => (
-                  <Card key={index}>
-                    <CardContent className="pt-6 space-y-4">
-                      <div className="flex justify-between items-center">
-                        <h4 className="font-semibold">Pergunta {index + 1}</h4>
-                        <div className="flex gap-2">
-                          <ReorderButtons
-                            index={index}
-                            totalItems={formData.faq_items.length}
-                            onMoveUp={() => moveItemUp("faq_items", index)}
-                            onMoveDown={() => moveItemDown("faq_items", index)}
-                          />
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => {
-                              const newFaqs = [...formData.faq_items];
-                              newFaqs.splice(index, 1);
-                              setFormData({ ...formData, faq_items: newFaqs });
-                            }}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
+                <DragDropContext onDragEnd={(result) => {
+                  if (!result.destination) return;
+                  const newFaqs = moveItem(formData.faq_items, result.source.index, result.destination.index);
+                  setFormData({ ...formData, faq_items: newFaqs });
+                }}>
+                  <Droppable droppableId="faq_items">
+                    {(provided) => (
+                      <div ref={provided.innerRef} {...provided.droppableProps} className="space-y-4">
+                        {formData.faq_items.map((faq: any, index: number) => (
+                          <Draggable key={`faq-${index}`} draggableId={`faq-${index}`} index={index}>
+                            {(provided, snapshot) => (
+                              <Card
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                className={snapshot.isDragging ? "shadow-lg" : ""}
+                              >
+                                <CardContent className="pt-6 space-y-4">
+                                  <div className="flex justify-between items-center">
+                                    <div className="flex items-center gap-2">
+                                      <div {...provided.dragHandleProps} className="cursor-grab active:cursor-grabbing p-1 hover:bg-muted rounded">
+                                        <GripVertical className="h-5 w-5 text-muted-foreground" />
+                                      </div>
+                                      <h4 className="font-semibold">Pergunta {index + 1}</h4>
+                                    </div>
+                                    <Button
+                                      variant="destructive"
+                                      size="sm"
+                                      onClick={() => {
+                                        const newFaqs = [...formData.faq_items];
+                                        newFaqs.splice(index, 1);
+                                        setFormData({ ...formData, faq_items: newFaqs });
+                                      }}
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </div>
 
-                      <div className="space-y-2">
-                        <Label>Pergunta</Label>
-                        <Input
-                          value={faq.question}
-                          onChange={(e) => {
-                            const newFaqs = [...formData.faq_items];
-                            newFaqs[index] = { ...faq, question: e.target.value };
-                            setFormData({ ...formData, faq_items: newFaqs });
-                          }}
-                          placeholder="Como funcionam os créditos Lovable?"
-                        />
-                      </div>
+                                  <div className="space-y-2">
+                                    <Label>Pergunta</Label>
+                                    <Input
+                                      value={faq.question}
+                                      onChange={(e) => {
+                                        const newFaqs = [...formData.faq_items];
+                                        newFaqs[index] = { ...faq, question: e.target.value };
+                                        setFormData({ ...formData, faq_items: newFaqs });
+                                      }}
+                                      placeholder="Como funcionam os créditos Lovable?"
+                                    />
+                                  </div>
 
-                      <div className="space-y-2">
-                        <Label>Resposta</Label>
-                        <Textarea
-                          value={faq.answer}
-                          onChange={(e) => {
-                            const newFaqs = [...formData.faq_items];
-                            newFaqs[index] = { ...faq, answer: e.target.value };
-                            setFormData({ ...formData, faq_items: newFaqs });
-                          }}
-                          placeholder="Os créditos são adicionados diretamente na sua conta..."
-                          rows={3}
-                        />
+                                  <div className="space-y-2">
+                                    <Label>Resposta</Label>
+                                    <Textarea
+                                      value={faq.answer}
+                                      onChange={(e) => {
+                                        const newFaqs = [...formData.faq_items];
+                                        newFaqs[index] = { ...faq, answer: e.target.value };
+                                        setFormData({ ...formData, faq_items: newFaqs });
+                                      }}
+                                      placeholder="Os créditos são adicionados diretamente na sua conta..."
+                                      rows={3}
+                                    />
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            )}
+                          </Draggable>
+                        ))}
+                        {provided.placeholder}
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                    )}
+                  </Droppable>
+                </DragDropContext>
               </CardContent>
             </Card>
           </TabsContent>
@@ -1355,6 +1461,7 @@ const LandingPageEditor = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Depoimentos de Clientes</CardTitle>
+                <CardDescription>Arraste para reordenar</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <Button
@@ -1372,94 +1479,112 @@ const LandingPageEditor = () => {
                   Adicionar Depoimento
                 </Button>
 
-                {formData.testimonials.map((testimonial: any, index: number) => (
-                  <Card key={index}>
-                    <CardContent className="pt-6 space-y-4">
-                      <div className="flex justify-between items-center">
-                        <h4 className="font-semibold">Depoimento {index + 1}</h4>
-                        <div className="flex gap-2">
-                          <ReorderButtons
-                            index={index}
-                            totalItems={formData.testimonials.length}
-                            onMoveUp={() => moveItemUp("testimonials", index)}
-                            onMoveDown={() => moveItemDown("testimonials", index)}
-                          />
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => {
-                              const newTestimonials = [...formData.testimonials];
-                              newTestimonials.splice(index, 1);
-                              setFormData({ ...formData, testimonials: newTestimonials });
-                            }}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
+                <DragDropContext onDragEnd={(result) => {
+                  if (!result.destination) return;
+                  const newTestimonials = moveItem(formData.testimonials, result.source.index, result.destination.index);
+                  setFormData({ ...formData, testimonials: newTestimonials });
+                }}>
+                  <Droppable droppableId="testimonials">
+                    {(provided) => (
+                      <div ref={provided.innerRef} {...provided.droppableProps} className="space-y-4">
+                        {formData.testimonials.map((testimonial: any, index: number) => (
+                          <Draggable key={`testimonial-${index}`} draggableId={`testimonial-${index}`} index={index}>
+                            {(provided, snapshot) => (
+                              <Card
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                className={snapshot.isDragging ? "shadow-lg" : ""}
+                              >
+                                <CardContent className="pt-6 space-y-4">
+                                  <div className="flex justify-between items-center">
+                                    <div className="flex items-center gap-2">
+                                      <div {...provided.dragHandleProps} className="cursor-grab active:cursor-grabbing p-1 hover:bg-muted rounded">
+                                        <GripVertical className="h-5 w-5 text-muted-foreground" />
+                                      </div>
+                                      <h4 className="font-semibold">Depoimento {index + 1}</h4>
+                                    </div>
+                                    <Button
+                                      variant="destructive"
+                                      size="sm"
+                                      onClick={() => {
+                                        const newTestimonials = [...formData.testimonials];
+                                        newTestimonials.splice(index, 1);
+                                        setFormData({ ...formData, testimonials: newTestimonials });
+                                      }}
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </div>
 
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label>Nome</Label>
-                          <Input
-                            value={testimonial.name}
-                            onChange={(e) => {
-                              const newTestimonials = [...formData.testimonials];
-                              newTestimonials[index] = { ...testimonial, name: e.target.value };
-                              setFormData({ ...formData, testimonials: newTestimonials });
-                            }}
-                            placeholder="Carlos Silva"
-                          />
-                        </div>
+                                  <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                      <Label>Nome</Label>
+                                      <Input
+                                        value={testimonial.name}
+                                        onChange={(e) => {
+                                          const newTestimonials = [...formData.testimonials];
+                                          newTestimonials[index] = { ...testimonial, name: e.target.value };
+                                          setFormData({ ...formData, testimonials: newTestimonials });
+                                        }}
+                                        placeholder="Carlos Silva"
+                                      />
+                                    </div>
 
-                        <div className="space-y-2">
-                          <Label>Cargo/Função</Label>
-                          <Input
-                            value={testimonial.role}
-                            onChange={(e) => {
-                              const newTestimonials = [...formData.testimonials];
-                              newTestimonials[index] = { ...testimonial, role: e.target.value };
-                              setFormData({ ...formData, testimonials: newTestimonials });
-                            }}
-                            placeholder="Desenvolvedor Freelancer"
-                          />
-                        </div>
-                      </div>
+                                    <div className="space-y-2">
+                                      <Label>Cargo/Função</Label>
+                                      <Input
+                                        value={testimonial.role}
+                                        onChange={(e) => {
+                                          const newTestimonials = [...formData.testimonials];
+                                          newTestimonials[index] = { ...testimonial, role: e.target.value };
+                                          setFormData({ ...formData, testimonials: newTestimonials });
+                                        }}
+                                        placeholder="Desenvolvedor Freelancer"
+                                      />
+                                    </div>
+                                  </div>
 
-                      <div className="space-y-2">
-                        <Label>Depoimento</Label>
-                        <Textarea
-                          value={testimonial.content}
-                          onChange={(e) => {
-                            const newTestimonials = [...formData.testimonials];
-                            newTestimonials[index] = { ...testimonial, content: e.target.value };
-                            setFormData({ ...formData, testimonials: newTestimonials });
-                          }}
-                          placeholder="Comprei os créditos e recebi na hora!"
-                          rows={3}
-                        />
-                      </div>
+                                  <div className="space-y-2">
+                                    <Label>Depoimento</Label>
+                                    <Textarea
+                                      value={testimonial.content}
+                                      onChange={(e) => {
+                                        const newTestimonials = [...formData.testimonials];
+                                        newTestimonials[index] = { ...testimonial, content: e.target.value };
+                                        setFormData({ ...formData, testimonials: newTestimonials });
+                                      }}
+                                      placeholder="Comprei os créditos e recebi na hora!"
+                                      rows={3}
+                                    />
+                                  </div>
 
-                      <div className="space-y-2">
-                        <Label>Nota (1-5)</Label>
-                        <Input
-                          type="number"
-                          min="1"
-                          max="5"
-                          value={testimonial.rating}
-                          onChange={(e) => {
-                            const newTestimonials = [...formData.testimonials];
-                            newTestimonials[index] = {
-                              ...testimonial,
-                              rating: parseInt(e.target.value),
-                            };
-                            setFormData({ ...formData, testimonials: newTestimonials });
-                          }}
-                        />
+                                  <div className="space-y-2">
+                                    <Label>Nota (1-5)</Label>
+                                    <Input
+                                      type="number"
+                                      min="1"
+                                      max="5"
+                                      value={testimonial.rating}
+                                      onChange={(e) => {
+                                        const newTestimonials = [...formData.testimonials];
+                                        newTestimonials[index] = {
+                                          ...testimonial,
+                                          rating: parseInt(e.target.value),
+                                        };
+                                        setFormData({ ...formData, testimonials: newTestimonials });
+                                      }}
+                                    />
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            )}
+                          </Draggable>
+                        ))}
+                        {provided.placeholder}
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                    )}
+                  </Droppable>
+                </DragDropContext>
               </CardContent>
             </Card>
           </TabsContent>
