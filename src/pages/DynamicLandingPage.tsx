@@ -3,6 +3,7 @@ import { useParams, Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { 
   Loader2, 
   CheckCircle2, 
@@ -13,16 +14,19 @@ import {
   CreditCard, 
   HeadphonesIcon,
   MessageCircle,
-  Sparkles,
   BadgeCheck,
   Lock,
-  Award,
   TrendingUp,
   Users,
   Heart,
-  HelpCircle,
   AlertCircle,
-  Youtube
+  Youtube,
+  BookOpen,
+  Award,
+  LogIn,
+  Link2,
+  Send,
+  CheckCircle
 } from "lucide-react";
 import {
   Accordion,
@@ -125,19 +129,39 @@ const DynamicLandingPage = () => {
     return <Navigate to="/" replace />;
   }
 
-  const iconMap: { [key: string]: React.ReactNode } = {
-    "⚡": <Zap className="w-8 h-8" />,
-    "🛡️": <Shield className="w-8 h-8" />,
-    "💳": <CreditCard className="w-8 h-8" />,
-    "🎧": <HeadphonesIcon className="w-8 h-8" />,
-    "⭐": <Star className="w-8 h-8" />,
-    "✅": <BadgeCheck className="w-8 h-8" />,
-    "🔒": <Lock className="w-8 h-8" />,
-    "📈": <TrendingUp className="w-8 h-8" />,
-    "👥": <Users className="w-8 h-8" />,
-    "❤️": <Heart className="w-8 h-8" />,
-    "💬": <MessageCircle className="w-8 h-8" />,
-    "⏰": <Clock className="w-8 h-8" />,
+  // Icon mapping for why_buy_items
+  const whyBuyIconMap: { [key: string]: React.ComponentType<any> } = {
+    "users": Users,
+    "book": BookOpen,
+    "clock": Clock,
+    "message": MessageCircle,
+    "star": Star,
+    "shield": Shield,
+    "zap": Zap,
+    "credit": CreditCard,
+    "headphones": HeadphonesIcon,
+    "heart": Heart,
+    "award": Award,
+    "check": BadgeCheck,
+    "lock": Lock,
+    "trending": TrendingUp,
+  };
+
+  // Icon mapping for how_to_steps
+  const stepIconMap: { [key: number]: React.ComponentType<any> } = {
+    1: LogIn,
+    2: Link2,
+    3: CreditCard,
+    4: Send,
+    5: CheckCircle,
+  };
+
+  // Icon mapping for benefits
+  const benefitIconMap: { [key: number]: React.ComponentType<any> } = {
+    0: CreditCard,
+    1: Shield,
+    2: Zap,
+    3: HeadphonesIcon,
   };
 
   return (
@@ -210,7 +234,7 @@ const DynamicLandingPage = () => {
             {pageData.delivery_time && (
               <div className="flex items-center gap-2 text-success">
                 <CheckCircle2 className="w-6 h-6" />
-                <span className="text-lg font-semibold uppercase">{pageData.delivery_time}</span>
+                <span className="text-lg font-semibold">ENTREGA GARANTIDA</span>
               </div>
             )}
             {pageData.bonus_text && (
@@ -222,25 +246,23 @@ const DynamicLandingPage = () => {
         </div>
       </section>
 
-      {/* Pricing Table */}
+      {/* Pricing Table - Matching Original */}
       {pageData.pricing_plans && Array.isArray(pageData.pricing_plans) && pageData.pricing_plans.length > 0 && (
-        <section className="py-16 px-4">
-          <div className="max-w-4xl mx-auto">
-            <motion.h2 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-3xl md:text-4xl font-bold text-center mb-8 text-foreground"
-            >
-              ESCOLHA SEU PACOTE
-            </motion.h2>
-            <div className="bg-card rounded-2xl border border-border overflow-hidden">
-              <table className="w-full">
+        <section className="py-12 px-4 bg-gradient-primary">
+          <div className="max-w-6xl mx-auto">
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
                 <thead>
                   <tr className="border-b border-border">
-                    <th className="py-4 px-6 text-left text-muted-foreground font-semibold">Créditos</th>
-                    <th className="py-4 px-6 text-center text-muted-foreground font-semibold">Valor</th>
-                    <th className="py-4 px-6 text-right text-muted-foreground font-semibold">Bônus</th>
+                    <th className="text-left py-4 px-4 text-foreground font-bold">
+                      Pacote de Créditos
+                    </th>
+                    <th className="text-center py-4 px-4 text-foreground font-bold">
+                      Preço
+                    </th>
+                    <th className="text-center py-4 px-4 text-foreground font-bold">
+                      Bônus 🎁
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -248,17 +270,22 @@ const DynamicLandingPage = () => {
                     <motion.tr
                       key={index}
                       initial={{ opacity: 0, x: -20 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: index * 0.1 }}
-                      className={`border-b border-border/50 hover:bg-muted/30 transition-colors ${plan.featured ? 'bg-primary/10' : ''}`}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      className={`border-b border-border hover:bg-secondary/50 transition-colors ${
+                        plan.featured ? "bg-secondary" : ""
+                      }`}
                     >
-                      <td className="py-4 px-6 text-lg font-bold text-foreground">{plan.credits} créditos</td>
-                      <td className="py-4 px-6 text-center text-xl font-bold text-primary">R$ {plan.price}</td>
-                      <td className="py-4 px-6 text-right">
+                      <td className="py-4 px-4 text-foreground font-semibold">
+                        {plan.credits} Créditos
+                      </td>
+                      <td className="py-4 px-4 text-center text-foreground font-bold text-lg">
+                        R$ {plan.price}
+                      </td>
+                      <td className="py-4 px-4 text-center">
                         {plan.bonus && (
-                          <span className="inline-block px-3 py-1 bg-success/20 text-success rounded-full text-sm font-bold">
-                            +{plan.bonus} bônus
+                          <span className="inline-flex items-center gap-1 text-accent font-bold text-lg">
+                            +{plan.bonus} <Star className="w-5 h-5 fill-current" />
                           </span>
                         )}
                       </td>
@@ -267,37 +294,120 @@ const DynamicLandingPage = () => {
                 </tbody>
               </table>
             </div>
+
             {pageData.delivery_time && (
-              <Card className="mt-6 p-4 bg-card border-primary/20">
-                <div className="flex items-center justify-center gap-2 text-primary">
-                  <Clock className="w-5 h-5" />
-                  <span className="font-semibold">{pageData.delivery_time}</span>
-                </div>
-              </Card>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.8 }}
+                className="mt-8 text-center"
+              >
+                <Card className="inline-block bg-muted border-border p-4">
+                  <p className="text-muted-foreground text-sm">
+                    ⏱️ <strong>PRAZO DE ENTREGA:</strong> Os créditos são processados e
+                    creditados na sua conta entre {pageData.delivery_time} após a confirmação do
+                    pagamento.
+                  </p>
+                </Card>
+              </motion.div>
             )}
           </div>
         </section>
       )}
 
-      {/* Why Buy From Me */}
+      {/* Why Buy From Me - Matching Original */}
       {pageData.why_buy_items && Array.isArray(pageData.why_buy_items) && pageData.why_buy_items.length > 0 && (
-        <section className="py-16 px-4 bg-gradient-to-b from-muted/30 to-background">
+        <section className="py-12 px-4 bg-background">
           <div className="max-w-6xl mx-auto">
-            <motion.h2 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="text-3xl md:text-4xl font-bold text-center mb-4 text-foreground"
+              className="text-center mb-8"
             >
-              POR QUE COMPRAR COMIGO?
-            </motion.h2>
-            <p className="text-center text-muted-foreground mb-12">
-              Veja os diferenciais que fazem a diferença
-            </p>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-3">
+                ⭐ Por Que Comprar de Mim?
+              </h2>
+              <p className="text-xl text-muted-foreground">
+                Confiança, experiência e resultados comprovados
+              </p>
+            </motion.div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
               {pageData.why_buy_items.map((item: any, index: number) => {
-                const IconComponent = iconMap[item.icon] || <Sparkles className="w-8 h-8" />;
-                
+                const IconComponent = whyBuyIconMap[item.icon] || Star;
+                return (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    <Card className="p-4 h-full bg-card border-border hover:border-success/50 transition-all hover-scale text-center">
+                      <IconComponent className="w-8 h-8 text-success mx-auto mb-2" />
+                      <p className="text-foreground text-sm font-semibold">
+                        {item.title}
+                      </p>
+                    </Card>
+                  </motion.div>
+                );
+              })}
+            </div>
+
+            {pageData.channel_url && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.4 }}
+              >
+                <Card className="p-8 bg-gradient-accent border-primary/30 text-center">
+                  <div className="flex flex-col md:flex-row items-center justify-center gap-6">
+                    <div className="flex items-center gap-3">
+                      <Youtube className="w-12 h-12 text-primary-foreground" />
+                      <div className="text-left">
+                        <h3 className="text-2xl font-bold text-primary-foreground mb-1">
+                          Mestre do Lovable
+                        </h3>
+                        <p className="text-primary-foreground/90 text-sm">
+                          Confira meu canal no YouTube com tutoriais, dicas e tudo sobre
+                          Lovable!
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      onClick={() => window.open(pageData.channel_url!, "_blank")}
+                      size="lg"
+                      variant="secondary"
+                      className="bg-background hover:bg-background/90 text-foreground font-bold px-8 whitespace-nowrap"
+                    >
+                      VISITAR CANAL
+                    </Button>
+                  </div>
+                </Card>
+              </motion.div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* How It Works - Matching Original */}
+      {pageData.how_to_steps && Array.isArray(pageData.how_to_steps) && pageData.how_to_steps.length > 0 && (
+        <section className="py-12 px-4">
+          <div className="max-w-6xl mx-auto">
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-3xl md:text-4xl font-bold text-center mb-12 text-foreground"
+            >
+              🌟 Como Solicitar
+            </motion.h2>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {pageData.how_to_steps.map((step: any, index: number) => {
+                const IconComponent = stepIconMap[step.step] || CheckCircle;
                 return (
                   <motion.div
                     key={index}
@@ -306,68 +416,99 @@ const DynamicLandingPage = () => {
                     viewport={{ once: true }}
                     transition={{ delay: index * 0.1 }}
                   >
-                    <Card className="h-full p-6 text-center hover:shadow-lg transition-shadow duration-300">
-                      <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                        {IconComponent}
+                    <Card className="p-6 h-full bg-card border-border hover:border-primary/50 transition-colors">
+                      <div className="flex items-start gap-4">
+                        <div className="flex-shrink-0 w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-xl">
+                          {step.step}
+                        </div>
+                        <div className="flex-1">
+                          <IconComponent className="w-8 h-8 text-accent mb-2" />
+                          <p className="text-foreground font-medium">{step.title}</p>
+                        </div>
                       </div>
-                      <h3 className="font-bold text-foreground">{item.title}</h3>
                     </Card>
                   </motion.div>
                 );
               })}
             </div>
-            {pageData.channel_url && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                className="mt-12"
-              >
-                <Card className="p-8 text-center bg-gradient-to-r from-card to-muted/30">
-                  <Youtube className="w-16 h-16 mx-auto mb-4 text-primary" />
-                  <h3 className="text-xl font-bold mb-2 text-foreground">Conheça meu canal</h3>
-                  <p className="text-muted-foreground mb-4">Confira conteúdos exclusivos</p>
-                  <a
-                    href={pageData.channel_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-block px-6 py-3 bg-primary text-primary-foreground rounded-lg font-bold hover:bg-primary/90 transition-colors"
-                  >
-                    Visitar Canal
-                  </a>
-                </Card>
-              </motion.div>
-            )}
           </div>
         </section>
       )}
 
-      {/* How It Works */}
-      {pageData.how_to_steps && Array.isArray(pageData.how_to_steps) && pageData.how_to_steps.length > 0 && (
-        <section className="py-16 px-4">
-          <div className="max-w-4xl mx-auto">
-            <motion.h2 
+      {/* Benefits - Matching Original */}
+      {pageData.benefits_receive && Array.isArray(pageData.benefits_receive) && pageData.benefits_receive.length > 0 && (
+        <section className="py-12 px-4 bg-gradient-primary">
+          <div className="max-w-6xl mx-auto">
+            <motion.h2
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               className="text-3xl md:text-4xl font-bold text-center mb-12 text-foreground"
             >
-              COMO FUNCIONA?
+              📂 O Que Recebe
             </motion.h2>
-            <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-5">
-              {pageData.how_to_steps.map((step: any, index: number) => (
+
+            <div className="grid md:grid-cols-2 gap-6">
+              {pageData.benefits_receive.map((benefit: string, index: number) => {
+                const IconComponent = benefitIconMap[index] || CheckCircle2;
+                return (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, x: index % 2 === 0 ? -20 : 20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    <Card className="p-6 bg-card border-border hover:border-success/50 transition-colors">
+                      <div className="flex items-start gap-4">
+                        <IconComponent className="w-8 h-8 text-success flex-shrink-0" />
+                        <p className="text-foreground">{benefit}</p>
+                      </div>
+                    </Card>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Security - Matching Original */}
+      {pageData.security_items && Array.isArray(pageData.security_items) && pageData.security_items.length > 0 && (
+        <section className="py-12 px-4">
+          <div className="max-w-4xl mx-auto">
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-3xl md:text-4xl font-bold text-center mb-4 text-foreground"
+            >
+              🛡️ Segurança
+            </motion.h2>
+
+            <motion.p
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              className="text-center text-success text-xl font-semibold mb-8"
+            >
+              Confiável e seguro! ✅
+            </motion.p>
+
+            <div className="space-y-4">
+              {pageData.security_items.map((item: string, index: number) => (
                 <motion.div
-                  key={step.step}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
+                  key={index}
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
                 >
-                  <Card className="p-6 text-center h-full hover:shadow-lg transition-shadow duration-300">
-                    <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-xl">
-                      {step.step}
+                  <Card className="p-4 bg-card border-border hover:border-success/50 transition-colors">
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="w-6 h-6 text-success flex-shrink-0 mt-0.5" />
+                      <p className="text-foreground">{item}</p>
                     </div>
-                    <p className="text-sm font-medium text-foreground">{step.title}</p>
                   </Card>
                 </motion.div>
               ))}
@@ -376,143 +517,109 @@ const DynamicLandingPage = () => {
         </section>
       )}
 
-      {/* Benefits */}
-      {pageData.benefits_receive && Array.isArray(pageData.benefits_receive) && pageData.benefits_receive.length > 0 && (
-        <section className="py-16 px-4 bg-gradient-to-b from-muted/30 to-background">
-          <div className="max-w-4xl mx-auto">
-            <motion.h2 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-3xl md:text-4xl font-bold text-center mb-4 text-foreground"
-            >
-              O QUE VOCÊ VAI RECEBER
-            </motion.h2>
-            <p className="text-center text-muted-foreground mb-12">
-              Confira todos os benefícios inclusos
-            </p>
-            <div className="grid gap-4 md:grid-cols-2">
-              {pageData.benefits_receive.map((benefit: string, index: number) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                  className="flex items-center gap-3 p-4 bg-card rounded-lg border border-border"
-                >
-                  <CheckCircle2 className="w-6 h-6 text-success flex-shrink-0" />
-                  <span className="text-foreground">{benefit}</span>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Security */}
-      {pageData.security_items && Array.isArray(pageData.security_items) && pageData.security_items.length > 0 && (
-        <section className="py-16 px-4">
-          <div className="max-w-4xl mx-auto">
-            <motion.h2 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-3xl md:text-4xl font-bold text-center mb-4 flex items-center justify-center gap-3 text-foreground"
-            >
-              <Lock className="w-8 h-8 text-primary" />
-              SEGURANÇA E PRIVACIDADE
-            </motion.h2>
-            <p className="text-center text-muted-foreground mb-12">
-              Sua compra está 100% protegida
-            </p>
-            <div className="grid gap-4 md:grid-cols-2">
-              {pageData.security_items.map((item: string, index: number) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                  className="flex items-center gap-3 p-4 bg-card rounded-lg border border-border"
-                >
-                  <Shield className="w-6 h-6 text-success flex-shrink-0" />
-                  <span className="text-foreground">{item}</span>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* About Me */}
+      {/* About Me - Matching Original */}
       {pageData.about_name && (
-        <section className="py-16 px-4 bg-gradient-to-b from-muted/30 to-background">
-          <div className="max-w-4xl mx-auto">
-            <motion.h2 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-3xl md:text-4xl font-bold text-center mb-12 text-foreground"
-            >
-              👨‍💻 QUEM SOU EU
-            </motion.h2>
+        <section className="py-12 px-4 bg-gradient-primary">
+          <div className="max-w-6xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
+              className="text-center mb-12"
             >
-              <Card className="p-8">
-                <div className="flex flex-col md:flex-row gap-8 items-center">
-                  {pageData.about_image_url && (
-                    <img
-                      src={pageData.about_image_url}
-                      alt={pageData.about_name}
-                      className="w-32 h-32 rounded-full object-cover border-4 border-primary/20"
-                    />
-                  )}
-                  <div className="flex-1 text-center md:text-left">
-                    <h3 className="text-2xl font-bold text-foreground mb-1">{pageData.about_name}</h3>
-                    {pageData.about_title && (
-                      <p className="text-primary font-semibold mb-4">{pageData.about_title}</p>
-                    )}
-                    {pageData.about_description && (
-                      <p className="text-muted-foreground">{pageData.about_description}</p>
-                    )}
-                  </div>
-                </div>
-                {pageData.about_highlights && Array.isArray(pageData.about_highlights) && pageData.about_highlights.length > 0 && (
-                  <div className="grid gap-4 md:grid-cols-2 mt-8">
-                    {pageData.about_highlights.map((highlight: any, index: number) => (
-                      <div key={index} className="p-4 bg-muted/50 rounded-lg">
-                        <h4 className="font-bold text-foreground mb-1">{highlight.title}</h4>
-                        <p className="text-sm text-muted-foreground">{highlight.description}</p>
-                      </div>
-                    ))}
-                  </div>
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                👨‍💻 Quem Sou Eu
+              </h2>
+              <div className="inline-block">
+                <h3 className="text-2xl md:text-3xl font-bold text-primary mb-2">
+                  {pageData.about_name}
+                </h3>
+                {pageData.about_title && (
+                  <p className="text-xl text-accent font-semibold">
+                    {pageData.about_title}
+                  </p>
                 )}
+              </div>
+              {pageData.about_description && (
+                <p className="mt-6 text-lg text-muted-foreground max-w-3xl mx-auto">
+                  {pageData.about_description}
+                </p>
+              )}
+            </motion.div>
+
+            {pageData.about_highlights && Array.isArray(pageData.about_highlights) && pageData.about_highlights.length > 0 && (
+              <div className="grid md:grid-cols-2 gap-6 mb-12">
+                {pageData.about_highlights.map((highlight: any, index: number) => {
+                  const highlightIcons = [BookOpen, Youtube, Users, Award];
+                  const IconComponent = highlightIcons[index] || Award;
+                  return (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: index * 0.1 }}
+                    >
+                      <Card className="p-6 h-full bg-card border-border hover:border-accent/50 transition-all hover-scale">
+                        <div className="flex flex-col items-center text-center gap-4">
+                          <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center">
+                            <IconComponent className="w-8 h-8 text-accent" />
+                          </div>
+                          <div>
+                            <h4 className="text-foreground font-bold text-lg mb-2">
+                              {highlight.title}
+                            </h4>
+                            <p className="text-muted-foreground text-sm">
+                              {highlight.description}
+                            </p>
+                          </div>
+                        </div>
+                      </Card>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.4 }}
+            >
+              <Card className="p-8 bg-secondary border-accent/30">
+                <blockquote className="text-center">
+                  <p className="text-foreground text-lg md:text-xl italic mb-4">
+                    "Minha missão é democratizar o acesso à criação de aplicações com
+                    IA, tornando a tecnologia acessível para todos."
+                  </p>
+                  <footer className="text-accent font-semibold">— {pageData.about_name}</footer>
+                </blockquote>
               </Card>
             </motion.div>
           </div>
         </section>
       )}
 
-      {/* Testimonials */}
+      {/* Testimonials - Matching Original */}
       {pageData.testimonials && Array.isArray(pageData.testimonials) && pageData.testimonials.length > 0 && (
-        <section className="py-16 px-4">
+        <section className="py-16 px-4 bg-background">
           <div className="max-w-6xl mx-auto">
-            <motion.h2 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="text-3xl md:text-4xl font-bold text-center mb-4 text-foreground"
+              className="text-center mb-12"
             >
-              O QUE DIZEM NOSSOS CLIENTES
-            </motion.h2>
-            <p className="text-center text-muted-foreground mb-12">
-              Depoimentos reais de quem já comprou
-            </p>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                ⭐ Depoimentos de Clientes
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                Veja o que nossos clientes têm a dizer sobre a experiência de comprar créditos Lovable
+              </p>
+            </motion.div>
+
+            <div className="grid md:grid-cols-2 gap-6">
               {pageData.testimonials.map((testimonial: any, index: number) => (
                 <motion.div
                   key={index}
@@ -521,18 +628,20 @@ const DynamicLandingPage = () => {
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
                 >
-                  <Card className="p-6 h-full">
-                    <div className="flex gap-1 mb-4">
-                      {[...Array(testimonial.rating || 5)].map((_, i) => (
-                        <Star key={i} className="w-5 h-5 text-yellow-500 fill-yellow-500" />
-                      ))}
-                    </div>
-                    <p className="text-muted-foreground mb-4 italic">"{testimonial.content}"</p>
-                    <div className="mt-auto">
-                      <p className="font-bold text-foreground">{testimonial.name}</p>
-                      {testimonial.role && (
-                        <p className="text-sm text-muted-foreground">{testimonial.role}</p>
-                      )}
+                  <Card className="p-6 h-full bg-card border-border hover:border-accent/50 transition-all hover-scale">
+                    <div className="flex flex-col gap-4">
+                      <div className="flex gap-1">
+                        {[...Array(testimonial.rating || 5)].map((_, i) => (
+                          <Star key={i} className="w-5 h-5 fill-accent text-accent" />
+                        ))}
+                      </div>
+                      <p className="text-foreground italic">"{testimonial.content}"</p>
+                      <div className="mt-auto pt-4 border-t border-border">
+                        <p className="font-semibold text-foreground">{testimonial.name}</p>
+                        {testimonial.role && (
+                          <p className="text-sm text-muted-foreground">{testimonial.role}</p>
+                        )}
+                      </div>
                     </div>
                   </Card>
                 </motion.div>
@@ -542,21 +651,19 @@ const DynamicLandingPage = () => {
         </section>
       )}
 
-      {/* FAQ */}
+      {/* FAQ - Matching Original */}
       {pageData.faq_items && Array.isArray(pageData.faq_items) && pageData.faq_items.length > 0 && (
-        <section className="py-16 px-4 bg-gradient-to-b from-muted/30 to-background">
-          <div className="max-w-3xl mx-auto">
-            <motion.h2 
+        <section className="py-12 px-4 bg-gradient-primary">
+          <div className="max-w-4xl mx-auto">
+            <motion.h2
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="text-3xl md:text-4xl font-bold text-center mb-4 text-foreground"
+              className="text-3xl md:text-4xl font-bold text-center mb-12 text-foreground"
             >
-              PERGUNTAS FREQUENTES
+              ❓ Perguntas Frequentes
             </motion.h2>
-            <p className="text-center text-muted-foreground mb-12">
-              Tire suas dúvidas antes de comprar
-            </p>
+
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -564,12 +671,12 @@ const DynamicLandingPage = () => {
             >
               <Accordion type="single" collapsible className="space-y-4">
                 {pageData.faq_items.map((faq: any, index: number) => (
-                  <AccordionItem 
-                    key={index} 
-                    value={`faq-${index}`}
+                  <AccordionItem
+                    key={index}
+                    value={`item-${index}`}
                     className="bg-card border border-border rounded-lg px-6"
                   >
-                    <AccordionTrigger className="text-left font-semibold text-foreground hover:no-underline">
+                    <AccordionTrigger className="text-left text-foreground hover:text-primary">
                       {faq.question}
                     </AccordionTrigger>
                     <AccordionContent className="text-muted-foreground">
@@ -583,25 +690,34 @@ const DynamicLandingPage = () => {
         </section>
       )}
 
-      {/* CTA Button */}
-      {pageData.whatsapp_number && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50"
-        >
-          <a
-            href={`https://wa.me/${pageData.whatsapp_number}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 px-8 py-4 bg-success text-success-foreground rounded-full font-bold text-lg shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
+      {/* CTA Section - Matching Original */}
+      <section className="py-12 px-4">
+        <div className="max-w-4xl mx-auto text-center">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            className="space-y-6"
           >
-            <MessageCircle className="w-6 h-6" />
-            {pageData.cta_text || "Falar no WhatsApp"}
-          </a>
-        </motion.div>
-      )}
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground">
+              Pronto para começar?
+            </h2>
+            <p className="text-xl text-muted-foreground">
+              Entre em contato agora e garanta seu bônus exclusivo!
+            </p>
+            {pageData.whatsapp_number && (
+              <Button
+                onClick={() => window.open(`https://wa.me/${pageData.whatsapp_number}`, "_blank")}
+                size="lg"
+                className="bg-success hover:bg-success/90 text-success-foreground font-bold text-lg px-8 py-6 rounded-full"
+              >
+                <MessageCircle className="w-6 h-6 mr-2" />
+                {pageData.cta_text || "Falar no WhatsApp"}
+              </Button>
+            )}
+          </motion.div>
+        </div>
+      </section>
 
       {/* Footer */}
       <footer className="py-8 px-4 text-center text-muted-foreground border-t border-border">
