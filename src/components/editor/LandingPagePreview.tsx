@@ -1,7 +1,6 @@
-import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { 
-  Loader2, 
   CheckCircle2, 
   Shield, 
   Star, 
@@ -10,15 +9,19 @@ import {
   CreditCard, 
   HeadphonesIcon,
   MessageCircle,
-  Sparkles,
   BadgeCheck,
   Lock,
-  Award,
   TrendingUp,
   Users,
   Heart,
   AlertCircle,
-  Youtube
+  Youtube,
+  BookOpen,
+  Award,
+  LogIn,
+  Link2,
+  Send,
+  CheckCircle
 } from "lucide-react";
 import {
   Accordion,
@@ -56,23 +59,39 @@ type PreviewProps = {
 };
 
 export const LandingPagePreview = ({ formData }: PreviewProps) => {
-  const iconMap: { [key: string]: React.ReactNode } = {
-    "users": <Users className="w-6 h-6" />,
-    "book": <Award className="w-6 h-6" />,
-    "clock": <Clock className="w-6 h-6" />,
-    "message": <MessageCircle className="w-6 h-6" />,
-    "⚡": <Zap className="w-6 h-6" />,
-    "🛡️": <Shield className="w-6 h-6" />,
-    "💳": <CreditCard className="w-6 h-6" />,
-    "🎧": <HeadphonesIcon className="w-6 h-6" />,
-    "⭐": <Star className="w-6 h-6" />,
-    "✅": <BadgeCheck className="w-6 h-6" />,
-    "🔒": <Lock className="w-6 h-6" />,
-    "📈": <TrendingUp className="w-6 h-6" />,
-    "👥": <Users className="w-6 h-6" />,
-    "❤️": <Heart className="w-6 h-6" />,
-    "💬": <MessageCircle className="w-6 h-6" />,
-    "⏰": <Clock className="w-6 h-6" />,
+  // Icon mapping for why_buy_items
+  const whyBuyIconMap: { [key: string]: React.ComponentType<any> } = {
+    "users": Users,
+    "book": BookOpen,
+    "clock": Clock,
+    "message": MessageCircle,
+    "star": Star,
+    "shield": Shield,
+    "zap": Zap,
+    "credit": CreditCard,
+    "headphones": HeadphonesIcon,
+    "heart": Heart,
+    "award": Award,
+    "check": BadgeCheck,
+    "lock": Lock,
+    "trending": TrendingUp,
+  };
+
+  // Icon mapping for how_to_steps
+  const stepIconMap: { [key: number]: React.ComponentType<any> } = {
+    1: LogIn,
+    2: Link2,
+    3: CreditCard,
+    4: Send,
+    5: CheckCircle,
+  };
+
+  // Icon mapping for benefits
+  const benefitIconMap: { [key: number]: React.ComponentType<any> } = {
+    0: CreditCard,
+    1: Shield,
+    2: Zap,
+    3: HeadphonesIcon,
   };
 
   return (
@@ -119,13 +138,13 @@ export const LandingPagePreview = ({ formData }: PreviewProps) => {
 
           <div className="flex flex-col items-center gap-2">
             {formData.delivery_time && (
-              <div className="flex items-center gap-1 text-green-500 text-xs">
+              <div className="flex items-center gap-1 text-success text-xs">
                 <CheckCircle2 className="w-4 h-4" />
-                <span className="font-semibold uppercase">{formData.delivery_time}</span>
+                <span className="font-semibold">ENTREGA GARANTIDA</span>
               </div>
             )}
             {formData.bonus_text && (
-              <div className="text-lg font-bold bg-gradient-to-r from-yellow-400 to-amber-500 bg-clip-text text-transparent">
+              <div className="text-lg font-bold bg-gradient-gold bg-clip-text text-transparent">
                 {formData.bonus_text}
               </div>
             )}
@@ -133,33 +152,42 @@ export const LandingPagePreview = ({ formData }: PreviewProps) => {
         </div>
       </section>
 
-      {/* Pricing Table */}
+      {/* Pricing Table - Matching Original */}
       {formData.pricing_plans?.length > 0 && (
-        <section className="py-4 px-3">
-          <h2 className="text-lg font-bold text-center mb-4 text-foreground">
-            ESCOLHA SEU PACOTE
-          </h2>
-          <div className="bg-card rounded-lg border border-border overflow-hidden">
-            <table className="w-full text-xs">
+        <section className="py-4 px-3 bg-gradient-primary">
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-xs">
               <thead>
                 <tr className="border-b border-border">
-                  <th className="py-2 px-3 text-left text-muted-foreground font-semibold">Créditos</th>
-                  <th className="py-2 px-3 text-center text-muted-foreground font-semibold">Valor</th>
-                  <th className="py-2 px-3 text-right text-muted-foreground font-semibold">Bônus</th>
+                  <th className="text-left py-2 px-2 text-foreground font-bold">
+                    Pacote de Créditos
+                  </th>
+                  <th className="text-center py-2 px-2 text-foreground font-bold">
+                    Preço
+                  </th>
+                  <th className="text-center py-2 px-2 text-foreground font-bold">
+                    Bônus 🎁
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {formData.pricing_plans.slice(0, 5).map((plan: any, index: number) => (
                   <tr
                     key={index}
-                    className="border-b border-border/50 hover:bg-muted/30 transition-colors"
+                    className={`border-b border-border hover:bg-secondary/50 transition-colors ${
+                      plan.featured ? "bg-secondary" : ""
+                    }`}
                   >
-                    <td className="py-2 px-3 font-bold text-foreground">{plan.credits} créditos</td>
-                    <td className="py-2 px-3 text-center font-bold text-primary">R$ {plan.price}</td>
-                    <td className="py-2 px-3 text-right">
+                    <td className="py-2 px-2 text-foreground font-semibold">
+                      {plan.credits} Créditos
+                    </td>
+                    <td className="py-2 px-2 text-center text-foreground font-bold">
+                      R$ {plan.price}
+                    </td>
+                    <td className="py-2 px-2 text-center">
                       {plan.bonus && (
-                        <span className="inline-block px-2 py-0.5 bg-green-500/20 text-green-500 rounded-full text-xs font-bold">
-                          +{plan.bonus}
+                        <span className="inline-flex items-center gap-1 text-accent font-bold">
+                          +{plan.bonus} <Star className="w-3 h-3 fill-current" />
                         </span>
                       )}
                     </td>
@@ -173,24 +201,81 @@ export const LandingPagePreview = ({ formData }: PreviewProps) => {
               </div>
             )}
           </div>
+          {formData.delivery_time && (
+            <Card className="mt-4 bg-muted border-border p-2">
+              <p className="text-muted-foreground text-xs text-center">
+                ⏱️ <strong>PRAZO DE ENTREGA:</strong> {formData.delivery_time}
+              </p>
+            </Card>
+          )}
         </section>
       )}
 
-      {/* Why Buy From Me */}
+      {/* Why Buy From Me - Matching Original */}
       {formData.why_buy_items?.length > 0 && (
-        <section className="py-4 px-3 bg-muted/30">
-          <h2 className="text-lg font-bold text-center mb-4 text-foreground">
-            POR QUE COMPRAR COMIGO?
-          </h2>
-          <div className="grid gap-2 grid-cols-2">
+        <section className="py-4 px-3 bg-background">
+          <div className="text-center mb-4">
+            <h2 className="text-base font-bold text-foreground mb-1">
+              ⭐ Por Que Comprar de Mim?
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              Confiança, experiência e resultados comprovados
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 mb-4">
             {formData.why_buy_items.map((item: any, index: number) => {
-              const IconComponent = iconMap[item.icon] || <Sparkles className="w-6 h-6" />;
+              const IconComponent = whyBuyIconMap[item.icon] || Star;
               return (
-                <Card key={index} className="p-3 text-center">
-                  <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                    {IconComponent}
+                <Card key={index} className="p-2 bg-card border-border hover:border-success/50 text-center">
+                  <IconComponent className="w-5 h-5 text-success mx-auto mb-1" />
+                  <p className="text-foreground text-xs font-semibold">
+                    {item.title}
+                  </p>
+                </Card>
+              );
+            })}
+          </div>
+
+          {formData.channel_url && (
+            <Card className="p-3 bg-gradient-accent border-primary/30 text-center">
+              <div className="flex items-center justify-center gap-2">
+                <Youtube className="w-6 h-6 text-primary-foreground" />
+                <div className="text-left">
+                  <h3 className="text-sm font-bold text-primary-foreground">
+                    Mestre do Lovable
+                  </h3>
+                  <p className="text-primary-foreground/90 text-xs">
+                    YouTube com tutoriais e dicas!
+                  </p>
+                </div>
+              </div>
+            </Card>
+          )}
+        </section>
+      )}
+
+      {/* How It Works - Matching Original */}
+      {formData.how_to_steps?.length > 0 && (
+        <section className="py-4 px-3">
+          <h2 className="text-base font-bold text-center mb-4 text-foreground">
+            🌟 Como Solicitar
+          </h2>
+
+          <div className="space-y-2">
+            {formData.how_to_steps.map((step: any, index: number) => {
+              const IconComponent = stepIconMap[step.step] || CheckCircle;
+              return (
+                <Card key={index} className="p-2 bg-card border-border hover:border-primary/50">
+                  <div className="flex items-start gap-2">
+                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-xs">
+                      {step.step}
+                    </div>
+                    <div className="flex-1">
+                      <IconComponent className="w-4 h-4 text-accent mb-1" />
+                      <p className="text-foreground text-xs font-medium">{step.title}</p>
+                    </div>
                   </div>
-                  <h3 className="font-bold text-foreground text-xs">{item.title}</h3>
                 </Card>
               );
             })}
@@ -198,119 +283,45 @@ export const LandingPagePreview = ({ formData }: PreviewProps) => {
         </section>
       )}
 
-      {/* How It Works */}
-      {formData.how_to_steps?.length > 0 && (
-        <section className="py-4 px-3">
-          <h2 className="text-lg font-bold text-center mb-4 text-foreground">
-            COMO FUNCIONA?
-          </h2>
-          <div className="space-y-2">
-            {formData.how_to_steps.map((step: any, index: number) => (
-              <div key={index} className="flex items-center gap-3 p-2 bg-card rounded-lg border border-border">
-                <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm flex-shrink-0">
-                  {step.step}
-                </div>
-                <p className="text-xs font-medium text-foreground">{step.title}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Benefits */}
+      {/* Benefits - Matching Original */}
       {formData.benefits_receive?.length > 0 && (
-        <section className="py-4 px-3 bg-muted/30">
-          <h2 className="text-lg font-bold text-center mb-4 text-foreground">
-            O QUE VOCÊ VAI RECEBER
+        <section className="py-4 px-3 bg-gradient-primary">
+          <h2 className="text-base font-bold text-center mb-4 text-foreground">
+            📂 O Que Recebe
           </h2>
+
           <div className="space-y-2">
-            {formData.benefits_receive.map((benefit: string, index: number) => (
-              <div
-                key={index}
-                className="flex items-center gap-2 p-2 bg-card rounded-lg border border-border"
-              >
-                <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
-                <span className="text-foreground text-xs">{benefit}</span>
-              </div>
-            ))}
+            {formData.benefits_receive.map((benefit: string, index: number) => {
+              const IconComponent = benefitIconMap[index] || CheckCircle2;
+              return (
+                <Card key={index} className="p-2 bg-card border-border hover:border-success/50">
+                  <div className="flex items-start gap-2">
+                    <IconComponent className="w-5 h-5 text-success flex-shrink-0" />
+                    <p className="text-foreground text-xs">{benefit}</p>
+                  </div>
+                </Card>
+              );
+            })}
           </div>
         </section>
       )}
 
-      {/* Security */}
+      {/* Security - Matching Original */}
       {formData.security_items?.length > 0 && (
         <section className="py-4 px-3">
-          <h2 className="text-lg font-bold text-center mb-4 flex items-center justify-center gap-2 text-foreground">
-            <Lock className="w-5 h-5 text-primary" />
-            SEGURANÇA
+          <h2 className="text-base font-bold text-center mb-2 text-foreground">
+            🛡️ Segurança
           </h2>
+          <p className="text-center text-success text-xs font-semibold mb-4">
+            Confiável e seguro! ✅
+          </p>
+
           <div className="space-y-2">
             {formData.security_items.map((item: string, index: number) => (
-              <div
-                key={index}
-                className="flex items-center gap-2 p-2 bg-card rounded-lg border border-border"
-              >
-                <Shield className="w-4 h-4 text-green-500 flex-shrink-0" />
-                <span className="text-foreground text-xs">{item}</span>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* About Me */}
-      {formData.about_name && (
-        <section className="py-4 px-3 bg-muted/30">
-          <h2 className="text-lg font-bold text-center mb-4 text-foreground">
-            👨‍💻 QUEM SOU EU
-          </h2>
-          <Card className="p-4">
-            <div className="flex items-start gap-3">
-              {formData.about_image_url && (
-                <img
-                  src={formData.about_image_url}
-                  alt={formData.about_name}
-                  className="w-16 h-16 rounded-full object-cover flex-shrink-0"
-                />
-              )}
-              <div>
-                <h3 className="font-bold text-foreground">{formData.about_name}</h3>
-                <p className="text-xs text-primary font-medium">{formData.about_title}</p>
-                <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{formData.about_description}</p>
-              </div>
-            </div>
-            {formData.about_highlights?.length > 0 && (
-              <div className="mt-3 grid grid-cols-2 gap-2">
-                {formData.about_highlights.map((highlight: any, index: number) => (
-                  <div key={index} className="flex items-start gap-1">
-                    <BadgeCheck className="w-3 h-3 text-primary flex-shrink-0 mt-0.5" />
-                    <span className="text-xs text-foreground">{highlight.title}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </Card>
-        </section>
-      )}
-
-      {/* Testimonials */}
-      {formData.testimonials?.length > 0 && (
-        <section className="py-4 px-3">
-          <h2 className="text-lg font-bold text-center mb-4 text-foreground">
-            ⭐ DEPOIMENTOS
-          </h2>
-          <div className="space-y-2">
-            {formData.testimonials.slice(0, 3).map((testimonial: any, index: number) => (
-              <Card key={index} className="p-3">
-                <div className="flex gap-1 mb-1">
-                  {Array.from({ length: testimonial.rating || 5 }).map((_, i) => (
-                    <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                  ))}
-                </div>
-                <p className="text-xs text-muted-foreground mb-2 line-clamp-2">"{testimonial.content}"</p>
-                <div className="text-xs">
-                  <span className="font-bold text-foreground">{testimonial.name}</span>
-                  <span className="text-muted-foreground"> - {testimonial.role}</span>
+              <Card key={index} className="p-2 bg-card border-border hover:border-success/50">
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-success flex-shrink-0 mt-0.5" />
+                  <p className="text-foreground text-xs">{item}</p>
                 </div>
               </Card>
             ))}
@@ -318,19 +329,115 @@ export const LandingPagePreview = ({ formData }: PreviewProps) => {
         </section>
       )}
 
-      {/* FAQ */}
+      {/* About Me - Matching Original */}
+      {formData.about_name && (
+        <section className="py-4 px-3 bg-gradient-primary">
+          <div className="text-center mb-4">
+            <h2 className="text-base font-bold text-foreground mb-2">
+              👨‍💻 Quem Sou Eu
+            </h2>
+            <h3 className="text-lg font-bold text-primary mb-1">
+              {formData.about_name}
+            </h3>
+            {formData.about_title && (
+              <p className="text-sm text-accent font-semibold">
+                {formData.about_title}
+              </p>
+            )}
+            {formData.about_description && (
+              <p className="mt-2 text-xs text-muted-foreground">
+                {formData.about_description}
+              </p>
+            )}
+          </div>
+
+          {formData.about_highlights?.length > 0 && (
+            <div className="grid grid-cols-2 gap-2 mb-4">
+              {formData.about_highlights.map((highlight: any, index: number) => {
+                const highlightIcons = [BookOpen, Youtube, Users, Award];
+                const IconComponent = highlightIcons[index] || Award;
+                return (
+                  <Card key={index} className="p-2 bg-card border-border hover:border-accent/50 text-center">
+                    <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-1">
+                      <IconComponent className="w-4 h-4 text-accent" />
+                    </div>
+                    <h4 className="text-foreground font-bold text-xs mb-0.5">
+                      {highlight.title}
+                    </h4>
+                    <p className="text-muted-foreground text-xs line-clamp-2">
+                      {highlight.description}
+                    </p>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+
+          <Card className="p-3 bg-secondary border-accent/30">
+            <blockquote className="text-center">
+              <p className="text-foreground text-xs italic mb-2">
+                "Minha missão é democratizar o acesso à criação de aplicações com
+                IA..."
+              </p>
+              <footer className="text-accent font-semibold text-xs">— {formData.about_name}</footer>
+            </blockquote>
+          </Card>
+        </section>
+      )}
+
+      {/* Testimonials - Matching Original */}
+      {formData.testimonials?.length > 0 && (
+        <section className="py-4 px-3 bg-background">
+          <div className="text-center mb-4">
+            <h2 className="text-base font-bold text-foreground mb-1">
+              ⭐ Depoimentos de Clientes
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              Veja o que nossos clientes têm a dizer
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            {formData.testimonials.slice(0, 3).map((testimonial: any, index: number) => (
+              <Card key={index} className="p-3 bg-card border-border hover:border-accent/50">
+                <div className="flex flex-col gap-2">
+                  <div className="flex gap-1">
+                    {[...Array(testimonial.rating || 5)].map((_, i) => (
+                      <Star key={i} className="w-3 h-3 fill-accent text-accent" />
+                    ))}
+                  </div>
+                  <p className="text-foreground italic text-xs">"{testimonial.content}"</p>
+                  <div className="pt-2 border-t border-border">
+                    <p className="font-semibold text-foreground text-xs">{testimonial.name}</p>
+                    {testimonial.role && (
+                      <p className="text-xs text-muted-foreground">{testimonial.role}</p>
+                    )}
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* FAQ - Matching Original */}
       {formData.faq_items?.length > 0 && (
-        <section className="py-4 px-3 bg-muted/30">
-          <h2 className="text-lg font-bold text-center mb-4 text-foreground">
-            ❓ PERGUNTAS FREQUENTES
+        <section className="py-4 px-3 bg-gradient-primary">
+          <h2 className="text-base font-bold text-center mb-4 text-foreground">
+            ❓ Perguntas Frequentes
           </h2>
+
           <Accordion type="single" collapsible className="space-y-2">
             {formData.faq_items.slice(0, 3).map((faq: any, index: number) => (
-              <AccordionItem key={index} value={`faq-${index}`} className="bg-card rounded-lg border border-border px-3">
-                <AccordionTrigger className="text-xs text-left py-2">
+              <AccordionItem
+                key={index}
+                value={`item-${index}`}
+                className="bg-card border border-border rounded-lg px-3"
+              >
+                <AccordionTrigger className="text-left text-foreground hover:text-primary text-xs py-2">
                   {faq.question}
                 </AccordionTrigger>
-                <AccordionContent className="text-xs text-muted-foreground pb-2">
+                <AccordionContent className="text-muted-foreground text-xs pb-2">
                   {faq.answer}
                 </AccordionContent>
               </AccordionItem>
@@ -339,17 +446,26 @@ export const LandingPagePreview = ({ formData }: PreviewProps) => {
         </section>
       )}
 
-      {/* CTA Button */}
-      {formData.whatsapp_number && (
-        <section className="py-6 px-3">
-          <div className="text-center">
-            <button className="w-full py-3 px-6 bg-green-500 text-white rounded-lg font-bold text-sm hover:bg-green-600 transition-colors flex items-center justify-center gap-2">
-              <MessageCircle className="w-5 h-5" />
+      {/* CTA Section - Matching Original */}
+      <section className="py-4 px-3">
+        <div className="text-center space-y-2">
+          <h2 className="text-base font-bold text-foreground">
+            Pronto para começar?
+          </h2>
+          <p className="text-xs text-muted-foreground">
+            Entre em contato agora e garanta seu bônus exclusivo!
+          </p>
+          {formData.whatsapp_number && (
+            <Button
+              size="sm"
+              className="w-full bg-success hover:bg-success/90 text-success-foreground font-bold rounded-full"
+            >
+              <MessageCircle className="w-4 h-4 mr-2" />
               {formData.cta_text || "Falar no WhatsApp"}
-            </button>
-          </div>
-        </section>
-      )}
+            </Button>
+          )}
+        </div>
+      </section>
     </div>
   );
 };
