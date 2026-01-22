@@ -18,7 +18,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="fixed top-0 right-0 p-4 z-50">
+      <header className="fixed top-12 right-0 p-4 z-40">
         <Button onClick={() => navigate("/auth")} variant="outline">
           Login / Cadastro
         </Button>
