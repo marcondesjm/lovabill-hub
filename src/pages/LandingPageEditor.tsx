@@ -409,7 +409,10 @@ const LandingPageEditor = () => {
                 </>
               )}
             </Button>
-            <Button onClick={handleSave} disabled={saving || slugAvailable === false || !formData.slug}>
+            <Button 
+              onClick={handleSave} 
+              disabled={saving || slugAvailable === false || !formData.slug || formData.slug.length < 3}
+            >
               {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               <Save className="mr-2 h-4 w-4" />
               Salvar
