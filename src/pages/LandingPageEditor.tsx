@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,8 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LandingPagePreview } from "@/components/editor/LandingPagePreview";
+
+export type EditorSection = "basic" | "pricing" | "about" | "content" | "testimonials" | "seo";
 const LandingPageEditor = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -22,6 +24,16 @@ const LandingPageEditor = () => {
   const [slugAvailable, setSlugAvailable] = useState<boolean | null>(null);
   const [checkingSlug, setCheckingSlug] = useState(false);
   const [showPreview, setShowPreview] = useState(true);
+  const [activeTab, setActiveTab] = useState<EditorSection>("basic");
+  const editorPanelRef = useRef<HTMLDivElement>(null);
+
+  const handleSectionClick = (section: EditorSection) => {
+    setActiveTab(section);
+    // Scroll to top of editor panel
+    if (editorPanelRef.current) {
+      editorPanelRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
 
   const [formData, setFormData] = useState({
     slug: "",
@@ -433,9 +445,9 @@ const LandingPageEditor = () => {
 
       <div className="flex-1 flex overflow-hidden">
         {/* Editor Panel */}
-        <main className={`flex-1 overflow-auto p-4 ${showPreview ? 'lg:w-1/2' : 'w-full'}`}>
+        <main ref={editorPanelRef} className={`flex-1 overflow-auto p-4 ${showPreview ? 'lg:w-1/2' : 'w-full'}`}>
           <div className="max-w-2xl mx-auto">
-            <Tabs defaultValue="basic" className="space-y-6">
+            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as EditorSection)} className="space-y-6">
               <TabsList className="grid w-full grid-cols-6">
                 <TabsTrigger value="basic" className="text-xs">Básico</TabsTrigger>
                 <TabsTrigger value="pricing" className="text-xs">Preços</TabsTrigger>
@@ -1398,12 +1410,12 @@ const LandingPageEditor = () => {
         {/* Preview Panel */}
         {showPreview && (
           <aside className="hidden lg:block lg:w-1/2 border-l border-border bg-muted/30 overflow-auto">
-            <div className="sticky top-0 bg-muted/50 border-b border-border px-4 py-2 flex items-center justify-between">
+            <div className="sticky top-0 bg-muted/50 border-b border-border px-4 py-2 flex items-center justify-between z-10">
               <span className="text-sm font-medium text-muted-foreground">Preview</span>
-              <span className="text-xs text-muted-foreground">/{formData.slug || "sua-url"}</span>
+              <span className="text-xs text-muted-foreground">Clique em uma seção para editar</span>
             </div>
             <div className="h-[calc(100vh-120px)] overflow-auto">
-              <LandingPagePreview formData={formData} />
+              <LandingPagePreview formData={formData} onSectionClick={handleSectionClick} />
             </div>
           </aside>
         )}
