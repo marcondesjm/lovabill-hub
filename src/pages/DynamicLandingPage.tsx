@@ -38,6 +38,11 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
+type SectionOrderItem = {
+  id: string;
+  enabled: boolean;
+};
+
 type LandingPageData = {
   slug: string;
   hero_title: string;
@@ -70,6 +75,44 @@ type LandingPageData = {
   pix_key: string | null;
   pix_name: string | null;
   donation_title: string | null;
+  section_order: SectionOrderItem[] | null;
+};
+
+const defaultSectionOrder: SectionOrderItem[] = [
+  { id: "pricing", enabled: true },
+  { id: "why_buy", enabled: true },
+  { id: "how_to", enabled: true },
+  { id: "benefits", enabled: true },
+  { id: "security", enabled: true },
+  { id: "about", enabled: true },
+  { id: "testimonials", enabled: true },
+  { id: "faq", enabled: true },
+  { id: "pix", enabled: true },
+];
+
+const parseSectionOrder = (data: any): SectionOrderItem[] => {
+  if (!data || !Array.isArray(data)) {
+    return defaultSectionOrder;
+  }
+  
+  const parsed: SectionOrderItem[] = [];
+  
+  for (const item of data) {
+    if (typeof item === "string") {
+      parsed.push({ id: item, enabled: true });
+    } else if (typeof item === "object" && item.id) {
+      parsed.push({ id: item.id, enabled: item.enabled !== false });
+    }
+  }
+  
+  // Add any missing sections at the end
+  for (const section of defaultSectionOrder) {
+    if (!parsed.find(p => p.id === section.id)) {
+      parsed.push(section);
+    }
+  }
+  
+  return parsed;
 };
 
 // PIX Donation Section Component
@@ -184,7 +227,10 @@ const DynamicLandingPage = () => {
       if (!data) {
         setNotFound(true);
       } else {
-        setPageData(data);
+        setPageData({
+          ...data,
+          section_order: parseSectionOrder(data.section_order),
+        });
         
         if (data.meta_title) {
           document.title = data.meta_title;
@@ -336,458 +382,469 @@ const DynamicLandingPage = () => {
         </div>
       </section>
 
-      {/* Pricing Table - Matching Original */}
-      {pageData.pricing_plans && Array.isArray(pageData.pricing_plans) && pageData.pricing_plans.length > 0 && (
-        <section className="py-12 px-4 bg-gradient-primary">
-          <div className="max-w-6xl mx-auto">
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr className="border-b border-border">
-                    <th className="text-left py-4 px-4 text-foreground font-bold">
-                      Pacote de Créditos
-                    </th>
-                    <th className="text-center py-4 px-4 text-foreground font-bold">
-                      Preço
-                    </th>
-                    <th className="text-center py-4 px-4 text-foreground font-bold">
-                      Bônus 🎁
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {pageData.pricing_plans.map((plan: any, index: number) => (
-                    <motion.tr
-                      key={index}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.05 }}
-                      className={`border-b border-border hover:bg-secondary/50 transition-colors ${
-                        plan.featured ? "bg-secondary" : ""
-                      }`}
-                    >
-                      <td className="py-4 px-4 text-foreground font-semibold">
-                        {plan.credits} Créditos
-                      </td>
-                      <td className="py-4 px-4 text-center text-foreground font-bold text-lg">
-                        R$ {plan.price}
-                      </td>
-                      <td className="py-4 px-4 text-center">
-                        {plan.bonus && (
-                          <span className="inline-flex items-center gap-1 text-accent font-bold text-lg">
-                            +{plan.bonus} <Star className="w-5 h-5 fill-current" />
-                          </span>
-                        )}
-                      </td>
-                    </motion.tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+      {/* Dynamic Sections based on section_order */}
+      {(pageData.section_order || defaultSectionOrder).map((section) => {
+        if (!section.enabled) return null;
 
-            {pageData.delivery_time && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.8 }}
-                className="mt-8 text-center"
-              >
-                <Card className="inline-block bg-muted border-border p-4">
-                  <p className="text-muted-foreground text-sm">
-                    ⏱️ <strong>PRAZO DE ENTREGA:</strong> Os créditos são processados e
-                    creditados na sua conta entre {pageData.delivery_time} após a confirmação do
-                    pagamento.
-                  </p>
-                </Card>
-              </motion.div>
-            )}
-          </div>
-        </section>
-      )}
-
-      {/* Why Buy From Me - Matching Original */}
-      {pageData.why_buy_items && Array.isArray(pageData.why_buy_items) && pageData.why_buy_items.length > 0 && (
-        <section className="py-12 px-4 bg-background">
-          <div className="max-w-6xl mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-center mb-8"
-            >
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-3">
-                ⭐ Por Que Comprar de Mim?
-              </h2>
-              <p className="text-xl text-muted-foreground">
-                Confiança, experiência e resultados comprovados
-              </p>
-            </motion.div>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
-              {pageData.why_buy_items.map((item: any, index: number) => {
-                const IconComponent = whyBuyIconMap[item.icon] || Star;
-                return (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: index * 0.1 }}
-                  >
-                    <Card className="p-4 h-full bg-card border-border hover:border-success/50 transition-all hover-scale text-center">
-                      <IconComponent className="w-8 h-8 text-success mx-auto mb-2" />
-                      <p className="text-foreground text-sm font-semibold">
-                        {item.title}
-                      </p>
-                    </Card>
-                  </motion.div>
-                );
-              })}
-            </div>
-
-            {pageData.channel_url && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.4 }}
-              >
-                <Card className="p-8 bg-gradient-accent border-primary/30 text-center">
-                  <div className="flex flex-col md:flex-row items-center justify-center gap-6">
-                    <div className="flex items-center gap-3">
-                      <Youtube className="w-12 h-12 text-primary-foreground" />
-                      <div className="text-left">
-                        <h3 className="text-2xl font-bold text-primary-foreground mb-1">
-                          {pageData.channel_name || "Mestre do Lovable"}
-                        </h3>
-                        <p className="text-primary-foreground/90 text-sm">
-                          Confira meu canal no YouTube com tutoriais, dicas e tudo sobre
-                          Lovable!
-                        </p>
-                      </div>
-                    </div>
-                    <Button
-                      onClick={() => window.open(pageData.channel_url!, "_blank")}
-                      size="lg"
-                      variant="secondary"
-                      className="bg-background hover:bg-background/90 text-foreground font-bold px-8 whitespace-nowrap"
-                    >
-                      VISITAR CANAL
-                    </Button>
+        switch (section.id) {
+          case "pricing":
+            return pageData.pricing_plans && Array.isArray(pageData.pricing_plans) && pageData.pricing_plans.length > 0 ? (
+              <section key="pricing" className="py-12 px-4 bg-gradient-primary">
+                <div className="max-w-6xl mx-auto">
+                  <div className="overflow-x-auto">
+                    <table className="w-full border-collapse">
+                      <thead>
+                        <tr className="border-b border-border">
+                          <th className="text-left py-4 px-4 text-foreground font-bold">
+                            Pacote de Créditos
+                          </th>
+                          <th className="text-center py-4 px-4 text-foreground font-bold">
+                            Preço
+                          </th>
+                          <th className="text-center py-4 px-4 text-foreground font-bold">
+                            Bônus 🎁
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {pageData.pricing_plans.map((plan: any, index: number) => (
+                          <motion.tr
+                            key={index}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: index * 0.05 }}
+                            className={`border-b border-border hover:bg-secondary/50 transition-colors ${
+                              plan.featured ? "bg-secondary" : ""
+                            }`}
+                          >
+                            <td className="py-4 px-4 text-foreground font-semibold">
+                              {plan.credits} Créditos
+                            </td>
+                            <td className="py-4 px-4 text-center text-foreground font-bold text-lg">
+                              R$ {plan.price}
+                            </td>
+                            <td className="py-4 px-4 text-center">
+                              {plan.bonus && (
+                                <span className="inline-flex items-center gap-1 text-accent font-bold text-lg">
+                                  +{plan.bonus} <Star className="w-5 h-5 fill-current" />
+                                </span>
+                              )}
+                            </td>
+                          </motion.tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
-                </Card>
-              </motion.div>
-            )}
-          </div>
-        </section>
-      )}
 
-      {/* How It Works - Matching Original */}
-      {pageData.how_to_steps && Array.isArray(pageData.how_to_steps) && pageData.how_to_steps.length > 0 && (
-        <section className="py-12 px-4">
-          <div className="max-w-6xl mx-auto">
-            <motion.h2
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-3xl md:text-4xl font-bold text-center mb-12 text-foreground"
-            >
-              🌟 Como Solicitar
-            </motion.h2>
+                  {pageData.delivery_time && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.8 }}
+                      className="mt-8 text-center"
+                    >
+                      <Card className="inline-block bg-muted border-border p-4">
+                        <p className="text-muted-foreground text-sm">
+                          ⏱️ <strong>PRAZO DE ENTREGA:</strong> Os créditos são processados e
+                          creditados na sua conta entre {pageData.delivery_time} após a confirmação do
+                          pagamento.
+                        </p>
+                      </Card>
+                    </motion.div>
+                  )}
+                </div>
+              </section>
+            ) : null;
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {pageData.how_to_steps.map((step: any, index: number) => {
-                const IconComponent = stepIconMap[step.step] || CheckCircle;
-                return (
+          case "why_buy":
+            return pageData.why_buy_items && Array.isArray(pageData.why_buy_items) && pageData.why_buy_items.length > 0 ? (
+              <section key="why_buy" className="py-12 px-4 bg-background">
+                <div className="max-w-6xl mx-auto">
                   <motion.div
-                    key={index}
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    transition={{ delay: index * 0.1 }}
+                    className="text-center mb-8"
                   >
-                    <Card className="p-6 h-full bg-card border-border hover:border-primary/50 transition-colors">
-                      <div className="flex items-start gap-4">
-                        <div className="flex-shrink-0 w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-xl">
-                          {step.step}
-                        </div>
-                        <div className="flex-1">
-                          <IconComponent className="w-8 h-8 text-accent mb-2" />
-                          <p className="text-foreground font-medium">{step.title}</p>
-                        </div>
-                      </div>
-                    </Card>
+                    <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-3">
+                      ⭐ Por Que Comprar de Mim?
+                    </h2>
+                    <p className="text-xl text-muted-foreground">
+                      Confiança, experiência e resultados comprovados
+                    </p>
                   </motion.div>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-      )}
 
-      {/* Benefits - Matching Original */}
-      {pageData.benefits_receive && Array.isArray(pageData.benefits_receive) && pageData.benefits_receive.length > 0 && (
-        <section className="py-12 px-4 bg-gradient-primary">
-          <div className="max-w-6xl mx-auto">
-            <motion.h2
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-3xl md:text-4xl font-bold text-center mb-12 text-foreground"
-            >
-              📂 O Que Recebe
-            </motion.h2>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+                    {pageData.why_buy_items.map((item: any, index: number) => {
+                      const IconComponent = whyBuyIconMap[item.icon] || Star;
+                      return (
+                        <motion.div
+                          key={index}
+                          initial={{ opacity: 0, scale: 0.9 }}
+                          whileInView={{ opacity: 1, scale: 1 }}
+                          viewport={{ once: true }}
+                          transition={{ delay: index * 0.1 }}
+                        >
+                          <Card className="p-4 h-full bg-card border-border hover:border-success/50 transition-all hover-scale text-center">
+                            <IconComponent className="w-8 h-8 text-success mx-auto mb-2" />
+                            <p className="text-foreground text-sm font-semibold">
+                              {item.title}
+                            </p>
+                          </Card>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
 
-            <div className="grid md:grid-cols-2 gap-6">
-              {pageData.benefits_receive.map((benefit: string, index: number) => {
-                const IconComponent = benefitIconMap[index] || CheckCircle2;
-                return (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, x: index % 2 === 0 ? -20 : 20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: index * 0.1 }}
-                  >
-                    <Card className="p-6 bg-card border-border hover:border-success/50 transition-colors">
-                      <div className="flex items-start gap-4">
-                        <IconComponent className="w-8 h-8 text-success flex-shrink-0" />
-                        <p className="text-foreground">{benefit}</p>
-                      </div>
-                    </Card>
-                  </motion.div>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Security - Matching Original */}
-      {pageData.security_items && Array.isArray(pageData.security_items) && pageData.security_items.length > 0 && (
-        <section className="py-12 px-4">
-          <div className="max-w-4xl mx-auto">
-            <motion.h2
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-3xl md:text-4xl font-bold text-center mb-4 text-foreground"
-            >
-              🛡️ Segurança
-            </motion.h2>
-
-            <motion.p
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              className="text-center text-success text-xl font-semibold mb-8"
-            >
-              Confiável e seguro! ✅
-            </motion.p>
-
-            <div className="space-y-4">
-              {pageData.security_items.map((item: string, index: number) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <Card className="p-4 bg-card border-border hover:border-success/50 transition-colors">
-                    <div className="flex items-start gap-3">
-                      <CheckCircle2 className="w-6 h-6 text-success flex-shrink-0 mt-0.5" />
-                      <p className="text-foreground">{item}</p>
-                    </div>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* About Me - Matching Original */}
-      {pageData.about_name && (
-        <section className="py-12 px-4 bg-gradient-primary">
-          <div className="max-w-6xl mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-center mb-12"
-            >
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                👨‍💻 Quem Sou Eu
-              </h2>
-              <div className="inline-block">
-                <h3 className="text-2xl md:text-3xl font-bold text-primary mb-2">
-                  {pageData.about_name}
-                </h3>
-                {pageData.about_title && (
-                  <p className="text-xl text-accent font-semibold">
-                    {pageData.about_title}
-                  </p>
-                )}
-              </div>
-              {pageData.about_description && (
-                <p className="mt-6 text-lg text-muted-foreground max-w-3xl mx-auto">
-                  {pageData.about_description}
-                </p>
-              )}
-            </motion.div>
-
-            {pageData.about_highlights && Array.isArray(pageData.about_highlights) && pageData.about_highlights.length > 0 && (
-              <div className="grid md:grid-cols-2 gap-6 mb-12">
-                {pageData.about_highlights.map((highlight: any, index: number) => {
-                  const highlightIcons = [BookOpen, Youtube, Users, Award];
-                  const IconComponent = highlightIcons[index] || Award;
-                  return (
+                  {pageData.channel_url && (
                     <motion.div
-                      key={index}
                       initial={{ opacity: 0, y: 20 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
-                      transition={{ delay: index * 0.1 }}
+                      transition={{ delay: 0.4 }}
                     >
-                      <Card className="p-6 h-full bg-card border-border hover:border-accent/50 transition-all hover-scale">
-                        <div className="flex flex-col items-center text-center gap-4">
-                          <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center">
-                            <IconComponent className="w-8 h-8 text-accent" />
+                      <Card className="p-8 bg-gradient-accent border-primary/30 text-center">
+                        <div className="flex flex-col md:flex-row items-center justify-center gap-6">
+                          <div className="flex items-center gap-3">
+                            <Youtube className="w-12 h-12 text-primary-foreground" />
+                            <div className="text-left">
+                              <h3 className="text-2xl font-bold text-primary-foreground mb-1">
+                                {pageData.channel_name || "Mestre do Lovable"}
+                              </h3>
+                              <p className="text-primary-foreground/90 text-sm">
+                                Confira meu canal no YouTube com tutoriais, dicas e tudo sobre
+                                Lovable!
+                              </p>
+                            </div>
                           </div>
-                          <div>
-                            <h4 className="text-foreground font-bold text-lg mb-2">
-                              {highlight.title}
-                            </h4>
-                            <p className="text-muted-foreground text-sm">
-                              {highlight.description}
-                            </p>
-                          </div>
+                          <Button
+                            onClick={() => window.open(pageData.channel_url!, "_blank")}
+                            size="lg"
+                            variant="secondary"
+                            className="bg-background hover:bg-background/90 text-foreground font-bold px-8 whitespace-nowrap"
+                          >
+                            VISITAR CANAL
+                          </Button>
                         </div>
                       </Card>
                     </motion.div>
-                  );
-                })}
-              </div>
-            )}
+                  )}
+                </div>
+              </section>
+            ) : null;
 
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.4 }}
-            >
-              <Card className="p-8 bg-secondary border-accent/30">
-                <blockquote className="text-center">
-                  <p className="text-foreground text-lg md:text-xl italic mb-4">
-                    "Minha missão é democratizar o acesso à criação de aplicações com
-                    IA, tornando a tecnologia acessível para todos."
-                  </p>
-                  <footer className="text-accent font-semibold">— {pageData.about_name}</footer>
-                </blockquote>
-              </Card>
-            </motion.div>
-          </div>
-        </section>
-      )}
-
-      {/* Testimonials - Matching Original */}
-      {pageData.testimonials && Array.isArray(pageData.testimonials) && pageData.testimonials.length > 0 && (
-        <section className="py-16 px-4 bg-background">
-          <div className="max-w-6xl mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-center mb-12"
-            >
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                ⭐ Depoimentos de Clientes
-              </h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Veja o que nossos clientes têm a dizer sobre a experiência de comprar créditos Lovable
-              </p>
-            </motion.div>
-
-            <div className="grid md:grid-cols-2 gap-6">
-              {pageData.testimonials.map((testimonial: any, index: number) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <Card className="p-6 h-full bg-card border-border hover:border-accent/50 transition-all hover-scale">
-                    <div className="flex flex-col gap-4">
-                      <div className="flex gap-1">
-                        {[...Array(testimonial.rating || 5)].map((_, i) => (
-                          <Star key={i} className="w-5 h-5 fill-accent text-accent" />
-                        ))}
-                      </div>
-                      <p className="text-foreground italic">"{testimonial.content}"</p>
-                      <div className="mt-auto pt-4 border-t border-border">
-                        <p className="font-semibold text-foreground">{testimonial.name}</p>
-                        {testimonial.role && (
-                          <p className="text-sm text-muted-foreground">{testimonial.role}</p>
-                        )}
-                      </div>
-                    </div>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* FAQ - Matching Original */}
-      {pageData.faq_items && Array.isArray(pageData.faq_items) && pageData.faq_items.length > 0 && (
-        <section className="py-12 px-4 bg-gradient-primary">
-          <div className="max-w-4xl mx-auto">
-            <motion.h2
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-3xl md:text-4xl font-bold text-center mb-12 text-foreground"
-            >
-              ❓ Perguntas Frequentes
-            </motion.h2>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-            >
-              <Accordion type="single" collapsible className="space-y-4">
-                {pageData.faq_items.map((faq: any, index: number) => (
-                  <AccordionItem
-                    key={index}
-                    value={`item-${index}`}
-                    className="bg-card border border-border rounded-lg px-6"
+          case "how_to":
+            return pageData.how_to_steps && Array.isArray(pageData.how_to_steps) && pageData.how_to_steps.length > 0 ? (
+              <section key="how_to" className="py-12 px-4">
+                <div className="max-w-6xl mx-auto">
+                  <motion.h2
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    className="text-3xl md:text-4xl font-bold text-center mb-12 text-foreground"
                   >
-                    <AccordionTrigger className="text-left text-foreground hover:text-primary">
-                      {faq.question}
-                    </AccordionTrigger>
-                    <AccordionContent className="text-muted-foreground">
-                      {faq.answer}
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-            </motion.div>
-          </div>
-        </section>
-      )}
+                    🌟 Como Solicitar
+                  </motion.h2>
 
-      {/* PIX Donation Section */}
-      {pageData.pix_enabled && pageData.pix_key && pageData.pix_name && (
-        <PixDonationSection 
-          pixKey={pageData.pix_key} 
-          pixName={pageData.pix_name} 
-          title={pageData.donation_title || "Apoie meu trabalho"} 
-        />
-      )}
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {pageData.how_to_steps.map((step: any, index: number) => {
+                      const IconComponent = stepIconMap[step.step] || CheckCircle;
+                      return (
+                        <motion.div
+                          key={index}
+                          initial={{ opacity: 0, y: 20 }}
+                          whileInView={{ opacity: 1, y: 0 }}
+                          viewport={{ once: true }}
+                          transition={{ delay: index * 0.1 }}
+                        >
+                          <Card className="p-6 h-full bg-card border-border hover:border-primary/50 transition-colors">
+                            <div className="flex items-start gap-4">
+                              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-xl">
+                                {step.step}
+                              </div>
+                              <div className="flex-1">
+                                <IconComponent className="w-8 h-8 text-accent mb-2" />
+                                <p className="text-foreground font-medium">{step.title}</p>
+                              </div>
+                            </div>
+                          </Card>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </section>
+            ) : null;
+
+          case "benefits":
+            return pageData.benefits_receive && Array.isArray(pageData.benefits_receive) && pageData.benefits_receive.length > 0 ? (
+              <section key="benefits" className="py-12 px-4 bg-gradient-primary">
+                <div className="max-w-6xl mx-auto">
+                  <motion.h2
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    className="text-3xl md:text-4xl font-bold text-center mb-12 text-foreground"
+                  >
+                    📂 O Que Recebe
+                  </motion.h2>
+
+                  <div className="grid md:grid-cols-2 gap-6">
+                    {pageData.benefits_receive.map((benefit: string, index: number) => {
+                      const IconComponent = benefitIconMap[index] || CheckCircle2;
+                      return (
+                        <motion.div
+                          key={index}
+                          initial={{ opacity: 0, x: index % 2 === 0 ? -20 : 20 }}
+                          whileInView={{ opacity: 1, x: 0 }}
+                          viewport={{ once: true }}
+                          transition={{ delay: index * 0.1 }}
+                        >
+                          <Card className="p-6 bg-card border-border hover:border-success/50 transition-colors">
+                            <div className="flex items-start gap-4">
+                              <IconComponent className="w-8 h-8 text-success flex-shrink-0" />
+                              <p className="text-foreground">{benefit}</p>
+                            </div>
+                          </Card>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </section>
+            ) : null;
+
+          case "security":
+            return pageData.security_items && Array.isArray(pageData.security_items) && pageData.security_items.length > 0 ? (
+              <section key="security" className="py-12 px-4">
+                <div className="max-w-4xl mx-auto">
+                  <motion.h2
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    className="text-3xl md:text-4xl font-bold text-center mb-4 text-foreground"
+                  >
+                    🛡️ Segurança
+                  </motion.h2>
+
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    viewport={{ once: true }}
+                    className="text-center text-success text-xl font-semibold mb-8"
+                  >
+                    Confiável e seguro! ✅
+                  </motion.p>
+
+                  <div className="space-y-4">
+                    {pageData.security_items.map((item: string, index: number) => (
+                      <motion.div
+                        key={index}
+                        initial={{ opacity: 0, x: -20 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: index * 0.1 }}
+                      >
+                        <Card className="p-4 bg-card border-border hover:border-success/50 transition-colors">
+                          <div className="flex items-start gap-3">
+                            <CheckCircle2 className="w-6 h-6 text-success flex-shrink-0 mt-0.5" />
+                            <p className="text-foreground">{item}</p>
+                          </div>
+                        </Card>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              </section>
+            ) : null;
+
+          case "about":
+            return pageData.about_name ? (
+              <section key="about" className="py-12 px-4 bg-gradient-primary">
+                <div className="max-w-6xl mx-auto">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    className="text-center mb-12"
+                  >
+                    <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                      👨‍💻 Quem Sou Eu
+                    </h2>
+                    <div className="inline-block">
+                      <h3 className="text-2xl md:text-3xl font-bold text-primary mb-2">
+                        {pageData.about_name}
+                      </h3>
+                      {pageData.about_title && (
+                        <p className="text-xl text-accent font-semibold">
+                          {pageData.about_title}
+                        </p>
+                      )}
+                    </div>
+                    {pageData.about_description && (
+                      <p className="mt-6 text-lg text-muted-foreground max-w-3xl mx-auto">
+                        {pageData.about_description}
+                      </p>
+                    )}
+                  </motion.div>
+
+                  {pageData.about_highlights && Array.isArray(pageData.about_highlights) && pageData.about_highlights.length > 0 && (
+                    <div className="grid md:grid-cols-2 gap-6 mb-12">
+                      {pageData.about_highlights.map((highlight: any, index: number) => {
+                        const highlightIcons = [BookOpen, Youtube, Users, Award];
+                        const IconComponent = highlightIcons[index] || Award;
+                        return (
+                          <motion.div
+                            key={index}
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: index * 0.1 }}
+                          >
+                            <Card className="p-6 h-full bg-card border-border hover:border-accent/50 transition-all hover-scale">
+                              <div className="flex flex-col items-center text-center gap-4">
+                                <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center">
+                                  <IconComponent className="w-8 h-8 text-accent" />
+                                </div>
+                                <div>
+                                  <h4 className="text-foreground font-bold text-lg mb-2">
+                                    {highlight.title}
+                                  </h4>
+                                  <p className="text-muted-foreground text-sm">
+                                    {highlight.description}
+                                  </p>
+                                </div>
+                              </div>
+                            </Card>
+                          </motion.div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.4 }}
+                  >
+                    <Card className="p-8 bg-secondary border-accent/30">
+                      <blockquote className="text-center">
+                        <p className="text-foreground text-lg md:text-xl italic mb-4">
+                          "Minha missão é democratizar o acesso à criação de aplicações com
+                          IA, tornando a tecnologia acessível para todos."
+                        </p>
+                        <footer className="text-accent font-semibold">— {pageData.about_name}</footer>
+                      </blockquote>
+                    </Card>
+                  </motion.div>
+                </div>
+              </section>
+            ) : null;
+
+          case "testimonials":
+            return pageData.testimonials && Array.isArray(pageData.testimonials) && pageData.testimonials.length > 0 ? (
+              <section key="testimonials" className="py-16 px-4 bg-background">
+                <div className="max-w-6xl mx-auto">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    className="text-center mb-12"
+                  >
+                    <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                      ⭐ Depoimentos de Clientes
+                    </h2>
+                    <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                      Veja o que nossos clientes têm a dizer sobre a experiência de comprar créditos Lovable
+                    </p>
+                  </motion.div>
+
+                  <div className="grid md:grid-cols-2 gap-6">
+                    {pageData.testimonials.map((testimonial: any, index: number) => (
+                      <motion.div
+                        key={index}
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: index * 0.1 }}
+                      >
+                        <Card className="p-6 h-full bg-card border-border hover:border-accent/50 transition-all hover-scale">
+                          <div className="flex flex-col gap-4">
+                            <div className="flex gap-1">
+                              {[...Array(testimonial.rating || 5)].map((_, i) => (
+                                <Star key={i} className="w-5 h-5 fill-accent text-accent" />
+                              ))}
+                            </div>
+                            <p className="text-foreground italic">"{testimonial.content}"</p>
+                            <div className="mt-auto pt-4 border-t border-border">
+                              <p className="font-semibold text-foreground">{testimonial.name}</p>
+                              {testimonial.role && (
+                                <p className="text-sm text-muted-foreground">{testimonial.role}</p>
+                              )}
+                            </div>
+                          </div>
+                        </Card>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              </section>
+            ) : null;
+
+          case "faq":
+            return pageData.faq_items && Array.isArray(pageData.faq_items) && pageData.faq_items.length > 0 ? (
+              <section key="faq" className="py-12 px-4 bg-gradient-primary">
+                <div className="max-w-4xl mx-auto">
+                  <motion.h2
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    className="text-3xl md:text-4xl font-bold text-center mb-12 text-foreground"
+                  >
+                    ❓ Perguntas Frequentes
+                  </motion.h2>
+
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                  >
+                    <Accordion type="single" collapsible className="space-y-4">
+                      {pageData.faq_items.map((faq: any, index: number) => (
+                        <AccordionItem
+                          key={index}
+                          value={`item-${index}`}
+                          className="bg-card border border-border rounded-lg px-6"
+                        >
+                          <AccordionTrigger className="text-left text-foreground hover:text-primary">
+                            {faq.question}
+                          </AccordionTrigger>
+                          <AccordionContent className="text-muted-foreground">
+                            {faq.answer}
+                          </AccordionContent>
+                        </AccordionItem>
+                      ))}
+                    </Accordion>
+                  </motion.div>
+                </div>
+              </section>
+            ) : null;
+
+          case "pix":
+            return pageData.pix_enabled && pageData.pix_key && pageData.pix_name ? (
+              <PixDonationSection
+                key="pix"
+                pixKey={pageData.pix_key}
+                pixName={pageData.pix_name}
+                title={pageData.donation_title || "Apoie meu trabalho"}
+              />
+            ) : null;
+
+          default:
+            return null;
+        }
+      })}
 
       {/* CTA Section - Matching Original */}
       <section className="py-12 px-4">

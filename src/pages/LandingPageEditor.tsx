@@ -12,8 +12,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LandingPagePreview } from "@/components/editor/LandingPagePreview";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
+import { SectionOrderEditor, SectionConfig, SectionId, getDefaultSectionOrder, parseSectionOrder } from "@/components/editor/SectionOrderEditor";
 
-export type EditorSection = "basic" | "pricing" | "about" | "content" | "testimonials" | "seo";
+export type EditorSection = "basic" | "pricing" | "about" | "content" | "testimonials" | "seo" | "layout";
 const LandingPageEditor = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -147,6 +148,7 @@ const LandingPageEditor = () => {
     pix_key: "",
     pix_name: "",
     donation_title: "Apoie meu trabalho",
+    section_order: getDefaultSectionOrder(),
   });
 
   useEffect(() => {
@@ -230,6 +232,7 @@ const LandingPageEditor = () => {
         pix_key: data.pix_key || "",
         pix_name: data.pix_name || "",
         donation_title: data.donation_title || "Apoie meu trabalho",
+        section_order: parseSectionOrder(data.section_order),
       });
     } catch (error: any) {
       toast({
@@ -362,9 +365,14 @@ const LandingPageEditor = () => {
           }
         }
 
+        const saveData = {
+          ...formData,
+          slug: finalSlug,
+          section_order: formData.section_order.map(s => ({ id: s.id, enabled: s.enabled })),
+        };
         const { error } = await supabase
           .from("landing_pages")
-          .update({ ...formData, slug: finalSlug })
+          .update(saveData)
           .eq("id", id);
         if (error) throw error;
       } else {
@@ -380,9 +388,15 @@ const LandingPageEditor = () => {
           finalSlug = `${finalSlug}-${Date.now()}`;
         }
 
+        const saveData = {
+          ...formData,
+          slug: finalSlug,
+          user_id: user.id,
+          section_order: formData.section_order.map(s => ({ id: s.id, enabled: s.enabled })),
+        };
         const { error } = await supabase
           .from("landing_pages")
-          .insert({ ...formData, slug: finalSlug, user_id: user.id });
+          .insert(saveData);
         if (error) throw error;
       }
 
@@ -458,8 +472,9 @@ const LandingPageEditor = () => {
         <main ref={editorPanelRef} className={`flex-1 overflow-auto p-4 ${showPreview ? 'lg:w-1/2' : 'w-full'}`}>
           <div className="max-w-2xl mx-auto">
             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as EditorSection)} className="space-y-6">
-              <TabsList className="grid w-full grid-cols-6">
+              <TabsList className="grid w-full grid-cols-7">
                 <TabsTrigger value="basic" className="text-xs">Básico</TabsTrigger>
+                <TabsTrigger value="layout" className="text-xs">Layout</TabsTrigger>
                 <TabsTrigger value="pricing" className="text-xs">Preços</TabsTrigger>
                 <TabsTrigger value="about" className="text-xs">Sobre</TabsTrigger>
                 <TabsTrigger value="content" className="text-xs">Conteúdo</TabsTrigger>
@@ -757,6 +772,20 @@ const LandingPageEditor = () => {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Layout Tab - Section Order */}
+          <TabsContent value="layout" className="space-y-6">
+            <SectionOrderEditor
+              sections={formData.section_order}
+              onReorder={(newOrder) => setFormData({ ...formData, section_order: newOrder })}
+              onToggle={(sectionId, enabled) => {
+                const newOrder = formData.section_order.map(s =>
+                  s.id === sectionId ? { ...s, enabled } : s
+                );
+                setFormData({ ...formData, section_order: newOrder });
+              }}
+            />
           </TabsContent>
 
           {/* Pricing Tab */}
