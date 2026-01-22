@@ -44,6 +44,7 @@ export type Database = {
           pix_key: string | null
           pix_name: string | null
           pricing_plans: Json | null
+          section_order: Json | null
           security_items: Json | null
           slug: string
           testimonials: Json | null
@@ -81,6 +82,7 @@ export type Database = {
           pix_key?: string | null
           pix_name?: string | null
           pricing_plans?: Json | null
+          section_order?: Json | null
           security_items?: Json | null
           slug: string
           testimonials?: Json | null
@@ -118,6 +120,7 @@ export type Database = {
           pix_key?: string | null
           pix_name?: string | null
           pricing_plans?: Json | null
+          section_order?: Json | null
           security_items?: Json | null
           slug?: string
           testimonials?: Json | null
