@@ -4,16 +4,55 @@ import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 interface PixDonationProps {
   pixKey: string;
   pixName: string;
   title?: string;
+  color?: string;
 }
 
-export const PixDonation = ({ pixKey, pixName, title = "Apoie meu trabalho" }: PixDonationProps) => {
+const colorStyles: Record<string, { button: string; heart: string }> = {
+  red: {
+    button: "bg-red-500 hover:bg-red-600",
+    heart: "text-red-500 fill-red-500"
+  },
+  green: {
+    button: "bg-green-500 hover:bg-green-600",
+    heart: "text-green-500 fill-green-500"
+  },
+  blue: {
+    button: "bg-blue-500 hover:bg-blue-600",
+    heart: "text-blue-500 fill-blue-500"
+  },
+  purple: {
+    button: "bg-purple-500 hover:bg-purple-600",
+    heart: "text-purple-500 fill-purple-500"
+  },
+  orange: {
+    button: "bg-orange-500 hover:bg-orange-600",
+    heart: "text-orange-500 fill-orange-500"
+  },
+  pink: {
+    button: "bg-pink-500 hover:bg-pink-600",
+    heart: "text-pink-500 fill-pink-500"
+  },
+  teal: {
+    button: "bg-teal-500 hover:bg-teal-600",
+    heart: "text-teal-500 fill-teal-500"
+  },
+  yellow: {
+    button: "bg-yellow-500 hover:bg-yellow-600",
+    heart: "text-yellow-500 fill-yellow-500"
+  }
+};
+
+export const PixDonation = ({ pixKey, pixName, title = "Apoie meu trabalho", color = "green" }: PixDonationProps) => {
   const [copied, setCopied] = useState(false);
   const { toast } = useToast();
+
+  const styles = colorStyles[color] || colorStyles.green;
 
   const handleCopyPix = async () => {
     try {
@@ -43,7 +82,7 @@ export const PixDonation = ({ pixKey, pixName, title = "Apoie meu trabalho" }: P
         >
           <Card className="p-8 bg-card border-primary/20 text-center">
             <div className="flex items-center justify-center gap-2 mb-4">
-              <Heart className="w-8 h-8 text-destructive fill-destructive" />
+              <Heart className={cn("w-8 h-8", styles.heart)} />
               <h2 className="text-2xl md:text-3xl font-bold text-foreground">
                 {title}
               </h2>
@@ -66,7 +105,10 @@ export const PixDonation = ({ pixKey, pixName, title = "Apoie meu trabalho" }: P
             <Button
               onClick={handleCopyPix}
               size="lg"
-              className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-full px-8 gap-2"
+              className={cn(
+                "text-white font-bold rounded-full px-8 gap-2",
+                styles.button
+              )}
             >
               {copied ? (
                 <>
