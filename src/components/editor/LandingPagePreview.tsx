@@ -58,6 +58,11 @@ type PreviewProps = {
     pricing_plans: any[];
     testimonials: any[];
     faq_items: any[];
+    pix_enabled?: boolean;
+    pix_key?: string;
+    pix_name?: string;
+    pix_color?: string;
+    donation_title?: string;
   };
   onSectionClick?: (section: EditorSection) => void;
 };

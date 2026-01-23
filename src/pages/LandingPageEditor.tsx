@@ -14,6 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { LandingPagePreview } from "@/components/editor/LandingPagePreview";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import { SectionOrderEditor, SectionConfig, SectionId, getDefaultSectionOrder, parseSectionOrder } from "@/components/editor/SectionOrderEditor";
+import { ColorPalette } from "@/components/editor/ColorPalette";
 
 export type EditorSection = "basic" | "pricing" | "about" | "content" | "testimonials" | "seo" | "layout";
 const LandingPageEditor = () => {
@@ -148,6 +149,7 @@ const LandingPageEditor = () => {
     pix_enabled: false,
     pix_key: "",
     pix_name: "",
+    pix_color: "green",
     donation_title: "Apoie meu trabalho",
     section_order: getDefaultSectionOrder(),
   });
@@ -232,6 +234,7 @@ const LandingPageEditor = () => {
         pix_enabled: data.pix_enabled || false,
         pix_key: data.pix_key || "",
         pix_name: data.pix_name || "",
+        pix_color: data.pix_color || "green",
         donation_title: data.donation_title || "Apoie meu trabalho",
         section_order: parseSectionOrder(data.section_order),
       });
@@ -707,6 +710,12 @@ const LandingPageEditor = () => {
                         placeholder="Nome que aparece ao pagar"
                       />
                     </div>
+
+                    <ColorPalette
+                      value={formData.pix_color}
+                      onChange={(colorId) => setFormData({ ...formData, pix_color: colorId })}
+                      label="Cor do botão PIX"
+                    />
                   </>
                 )}
               </CardContent>

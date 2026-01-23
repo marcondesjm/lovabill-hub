@@ -40,6 +40,7 @@ export type Database = {
           meta_description: string | null
           meta_title: string | null
           offer_text: string | null
+          pix_color: string | null
           pix_enabled: boolean | null
           pix_key: string | null
           pix_name: string | null
@@ -78,6 +79,7 @@ export type Database = {
           meta_description?: string | null
           meta_title?: string | null
           offer_text?: string | null
+          pix_color?: string | null
           pix_enabled?: boolean | null
           pix_key?: string | null
           pix_name?: string | null
@@ -116,6 +118,7 @@ export type Database = {
           meta_description?: string | null
           meta_title?: string | null
           offer_text?: string | null
+          pix_color?: string | null
           pix_enabled?: boolean | null
           pix_key?: string | null
           pix_name?: string | null

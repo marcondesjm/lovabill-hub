@@ -74,6 +74,7 @@ type LandingPageData = {
   pix_enabled: boolean | null;
   pix_key: string | null;
   pix_name: string | null;
+  pix_color: string | null;
   donation_title: string | null;
   section_order: SectionOrderItem[] | null;
 };
@@ -116,9 +117,22 @@ const parseSectionOrder = (data: any): SectionOrderItem[] => {
 };
 
 // PIX Donation Section Component
-const PixDonationSection = ({ pixKey, pixName, title }: { pixKey: string; pixName: string; title: string }) => {
+const PixDonationSection = ({ pixKey, pixName, title, color = "green" }: { pixKey: string; pixName: string; title: string; color?: string }) => {
   const [copied, setCopied] = useState(false);
   const { toast } = useToast();
+
+  const colorStyles: Record<string, { button: string; heart: string }> = {
+    red: { button: "bg-red-500 hover:bg-red-600", heart: "text-red-500 fill-red-500" },
+    green: { button: "bg-green-500 hover:bg-green-600", heart: "text-green-500 fill-green-500" },
+    blue: { button: "bg-blue-500 hover:bg-blue-600", heart: "text-blue-500 fill-blue-500" },
+    purple: { button: "bg-purple-500 hover:bg-purple-600", heart: "text-purple-500 fill-purple-500" },
+    orange: { button: "bg-orange-500 hover:bg-orange-600", heart: "text-orange-500 fill-orange-500" },
+    pink: { button: "bg-pink-500 hover:bg-pink-600", heart: "text-pink-500 fill-pink-500" },
+    teal: { button: "bg-teal-500 hover:bg-teal-600", heart: "text-teal-500 fill-teal-500" },
+    yellow: { button: "bg-yellow-500 hover:bg-yellow-600", heart: "text-yellow-500 fill-yellow-500" }
+  };
+
+  const styles = colorStyles[color] || colorStyles.green;
 
   const handleCopyPix = async () => {
     try {
@@ -149,7 +163,7 @@ const PixDonationSection = ({ pixKey, pixName, title }: { pixKey: string; pixNam
         >
           <Card className="p-8 bg-card border-primary/20 text-center">
             <div className="flex items-center justify-center gap-2 mb-4">
-              <Heart className="w-8 h-8 text-destructive fill-destructive" />
+              <Heart className={`w-8 h-8 ${styles.heart}`} />
               <h2 className="text-2xl md:text-3xl font-bold text-foreground">
                 {title}
               </h2>
@@ -172,7 +186,7 @@ const PixDonationSection = ({ pixKey, pixName, title }: { pixKey: string; pixNam
             <Button
               onClick={handleCopyPix}
               size="lg"
-              className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-full px-8 gap-2"
+              className={`text-white font-bold rounded-full px-8 gap-2 ${styles.button}`}
             >
               {copied ? (
                 <>
@@ -838,6 +852,7 @@ const DynamicLandingPage = () => {
                 pixKey={pageData.pix_key}
                 pixName={pageData.pix_name}
                 title={pageData.donation_title || "Apoie meu trabalho"}
+                color={pageData.pix_color || "green"}
               />
             ) : null;
 
